@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class DeputatAccountExtractor(DataExtractor):
@@ -41,44 +44,28 @@ class DeputatAccountExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing DEPUTAT_ACCOUNT table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+        if not teacher or not semester_planning:
+            logger.warning("Missing dependencies")
+            return []
         
-        # Placeholder implementation - replace with actual logic
         records = []
+        id_counter = 1
         
-        # Example: If you have a DataFrame parameter, process it
-        
-        
-        # Example using dependency data: TEACHER
-        if teacher:
-            # Access dependency records for foreign key lookups
-            teacher_lookup = {record['ID']: record for record in teacher}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in teacher_lookup:
-                    # Use dependency record data
-                    dep_record = teacher_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+        for t in teacher:
+            for sp in semester_planning:
+                record = {
+                    'ACC_ID': id_counter,
+                    'FK_TEACHER': t['T_ID'],
+                    'FK_SEMESTER_PLANNING': sp['SP_ID'],
+                    'ACC_BASELINE_HOURS': 18.0 if t.get('T_ISPROFESSOR') else 0.0,
+                    'ACC_CREDIT_HOURS': 0.0,
+                    'ACC_DEBIT_HOURS': 0.0,
+                    'ACC_BALANCE': 0.0,
+                    'ACC_CARRYOVER': 0.0
+                }
+                records.append(record)
+                id_counter += 1
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

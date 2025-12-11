@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class PositionProfessorExtractor(DataExtractor):
@@ -44,55 +47,49 @@ class PositionProfessorExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing POSITION_PROFESSOR table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
+        """
+        if not professor or not position:
+            logger.warning("Missing dependencies")
+            return []
+        
+        # Get TEACHER data for name lookup
+        teacher_data = kwargs.get('teacher', [])
+        teacher_by_name = {}
+        for t in teacher_data:
+            lastname = t.get('T_LASTNAME', '')
+            if lastname:
+                teacher_by_name[lastname] = t['T_ID']
+        
+        prof_ids = {p['P_ID'] for p in professor}
+        position_by_name = {p['PO_NAME']: p['PO_ID'] for p in position}
+        
         records = []
-        for index, row in some_dataframe.iterrows():
+        
+        for _, row in WorkLoad.iterrows():
+            name = str(row['name']).strip() if not pd.isna(row['name']) else None
+            job_title = str(row['job title']).strip() if not pd.isna(row['job title']) else None
+            term = str(row['term']).strip() if not pd.isna(row['term']) else None
+            reduction = pd.to_numeric(row['reduction'], errors='coerce')
+            
+            if not name or not job_title or pd.isna(reduction):
+                continue
+            
+            teacher_id = teacher_by_name.get(name)
+            if not teacher_id or teacher_id not in prof_ids:
+                continue
+            
+            position_id = position_by_name.get(job_title)
+            if not position_id:
+                continue
+            
             record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
+                'P_ID': teacher_id,
+                'PO_ID': position_id,
+                'TERM': term,
+                'CREDIT_HOURS': float(reduction)
             }
             records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: WorkLoad
-        if 'WorkLoad' in locals():
-            df = WorkLoad
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: PROFESSOR
-        if professor:
-            # Access dependency records for foreign key lookups
-            professor_lookup = {record['ID']: record for record in professor}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in professor_lookup:
-                    # Use dependency record data
-                    dep_record = professor_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records
+

@@ -10,7 +10,6 @@ This extractor follows the DataExtractor contract for the database population sy
 Modify the extract() method to implement your specific business logic.
 """
 
-from tkinter.font import names
 import pandas as pd
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
@@ -56,6 +55,9 @@ class StudyProgramExtractor(DataExtractor):
         return records
         ```
         """
+        # Extract unique study program names
+        names = OfferedCourses['studyPrg'].drop_duplicates().dropna().tolist()
+        
         studyPrograms = []
         for name in names:
             if not name or pd.isna(name):

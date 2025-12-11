@@ -63,12 +63,20 @@ class CourseExtractor(DataExtractor):
         # Get relevant columns and remove duplicates
         coursesDF = OfferedCourses[[
             'lecNo', 'sbjNo', 'assNotes', 'term', 'cntCurr', 'cntLec', 'cntSchd'
-        ]].drop_duplicates()
+        ]].copy()
+        
+        # Add index as course ID
+        coursesDF['course_id'] = range(1, len(coursesDF) + 1)
 
         # Create lookup sets for validation (same as original)
         valid_teacher_ids = {t['T_ID'] for t in teacher}
         valid_subject_nrs = {s['S_NR'] for s in subject}
-        valid_offering_ids = {o['OA_ID'] for o in offering}
+        
+        # Create offering lookup: (subject_id, semester) -> offering_id
+        offering_lookup = {}
+        for o in offering:
+            key = (o.get('FK_SUBJECT'), o.get('FK_SEMESTER_PLANNING'))
+            offering_lookup[key] = o.get('O_ID')
         
         def safe_numeric(value):
             """Convert numeric strings with comma decimal separator to float"""
@@ -84,12 +92,16 @@ class CourseExtractor(DataExtractor):
         courses = []
         for index, row in coursesDF.iterrows():
             # Skip rows with missing required data
-            if pd.isna(row['lecNo']) or pd.isna(row['sbjNo']) or pd.isna(row['oa_id']):
+            if pd.isna(row['lecNo']) or pd.isna(row['sbjNo']):
                 continue
             
             teacher_id = int(row['lecNo'])
             subject_nr = str(row['sbjNo'])
-            offering_id = int(row['oa_id']) 
+            term = str(row['term']) if not pd.isna(row['term']) else None
+            
+            # Skip if no term available
+            if not term:
+                continue 
             
             # Validate foreign keys (same as original logic)
             if teacher_id not in valid_teacher_ids:
@@ -97,12 +109,22 @@ class CourseExtractor(DataExtractor):
             
             if subject_nr not in valid_subject_nrs:
                 continue  # Skip courses with invalid subject
-
-            if offering_id not in valid_offering_ids:
-                continue  # Skip courses with invalid offering
+            
+            # Find offering_id - we need to lookup via subject and term
+            # This requires SUBJECT and SEMESTER_PLANNING to be extracted first
+            # For now we use a simple approach - find first matching offering
+            offering_id = None
+            for o in offering:
+                if o.get('FK_SUBJECT') == subject_nr:
+                    offering_id = o.get('O_ID')
+                    break
+            
+            # Skip if no offering found
+            if not offering_id:
+                continue
             
             course = {
-                'C_ID': index + 1,  # Auto-incrementing ID (same as original)
+                'C_ID': int(row['course_id']),  # Use generated course ID
                 'C_TEACHER': teacher_id,  # Foreign key to TEACHER.T_ID
                 'C_SUBJECT': subject_nr,  # Foreign key to SUBJECT.S_NR
                 'C_ACTUAL_STUPO_HOURS': safe_numeric(row['cntCurr']),
@@ -110,7 +132,7 @@ class CourseExtractor(DataExtractor):
                 'C_CREDITED_HOURS': safe_numeric(row['cntLec']),
                 'C_TEACHER_COMMENT': str(row['assNotes']) if not pd.isna(row['assNotes']) else None,
                 'C_SEMESTER': str(row['term']) if not pd.isna(row['term']) else None,
-                'FK_OFFERING': offering_id  # Foreign key to OFFERING.OA_ID
+                'FK_OFFERING': offering_id  # Foreign key to OFFERING.O_ID
             }
             courses.append(course)
         

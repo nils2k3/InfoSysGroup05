@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class OfferingExtractor(DataExtractor):
@@ -43,55 +46,45 @@ class OfferingExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing OFFERING table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
+        """
+        if not subject or not semester_planning:
+            logger.warning("Missing dependencies")
+            return []
+        
+        # Create lookups
+        subject_lookup = {s['S_NR']: s for s in subject}
+        semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
+        
+        # Get unique subject-term combinations
+        df = OfferedCourses[['sbjNo', 'term', 'numSchd']].copy()
+        df['sbjNo'] = df['sbjNo'].astype(str).str.strip()
+        df['term'] = df['term'].astype(str).str.strip()
+        df['numSchd'] = pd.to_numeric(df['numSchd'], errors='coerce').fillna(0)
+        
+        unique = df.drop_duplicates(subset=['sbjNo', 'term']).reset_index(drop=True)
+        
         records = []
-        for index, row in some_dataframe.iterrows():
+        id_counter = 1
+        
+        for _, row in unique.iterrows():
+            sbj_no = row['sbjNo']
+            term = row['term']
+            
+            if sbj_no not in subject_lookup or term not in semester_lookup:
+                continue
+            
+            subj = subject_lookup[sbj_no]
+            sem_id = semester_lookup[term]
+            
             record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
+                'O_ID': id_counter,
+                'FK_SUBJECT': subj['S_NR'],
+                'FK_SEMESTER_PLANNING': sem_id,
+                'O_PLANNED_HOURS': float(row['numSchd']),
+                'O_TYPE': None
             }
             records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: SUBJECT
-        if subject:
-            # Access dependency records for foreign key lookups
-            subject_lookup = {record['ID']: record for record in subject}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in subject_lookup:
-                    # Use dependency record data
-                    dep_record = subject_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+            id_counter += 1
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

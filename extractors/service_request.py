@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class ServiceRequestExtractor(DataExtractor):
@@ -44,55 +47,49 @@ class ServiceRequestExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing SERVICE_REQUEST table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
+        """
+        if not subject or not semester_planning or not department:
+            logger.warning("Missing dependencies")
+            return []
+        
+        subject_lookup = {s['S_NR']: s for s in subject}
+        semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
+        dept_names = {d['D_NAME'] for d in department}
+        
+        # Filter for service courses (srvProvider != srvClient)
+        df = OfferedCourses[OfferedCourses['srvProvider'] != OfferedCourses['srvClient']].copy()
+        df = df[['sbjNo', 'term', 'srvProvider', 'srvClient', 'numSchd']].drop_duplicates()
+        
         records = []
-        for index, row in some_dataframe.iterrows():
+        id_counter = 1
+        
+        for _, row in df.iterrows():
+            sbj_no = str(row['sbjNo']).strip()
+            term = str(row['term']).strip()
+            provider = str(row['srvProvider']).strip()
+            client = str(row['srvClient']).strip()
+            
+            if sbj_no not in subject_lookup or term not in semester_lookup:
+                continue
+            if provider not in dept_names or client not in dept_names:
+                continue
+            
+            hours = pd.to_numeric(row['numSchd'], errors='coerce')
+            if pd.isna(hours):
+                hours = 0.0
+            
             record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
+                'SR_ID': id_counter,
+                'FK_SUBJECT': sbj_no,
+                'FK_SEMESTER_PLANNING': semester_lookup[term],
+                'SR_EXPORTING_FACULTY': provider,
+                'SR_IMPORTING_FACULTY': client,
+                'SR_WEEKLY_HOURS': float(hours),
+                'SR_STATUS': 'open'
             }
             records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: SUBJECT
-        if subject:
-            # Access dependency records for foreign key lookups
-            subject_lookup = {record['ID']: record for record in subject}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in subject_lookup:
-                    # Use dependency record data
-                    dep_record = subject_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+            id_counter += 1
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records
+

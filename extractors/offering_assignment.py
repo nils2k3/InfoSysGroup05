@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class OfferingAssignmentExtractor(DataExtractor):
@@ -43,55 +46,60 @@ class OfferingAssignmentExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing OFFERING_ASSIGNMENT table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
+        """
+        if not offering or not teacher:
+            logger.warning("Missing dependencies")
+            return []
+        
+        # Create offering lookup by subject+term
+        offering_by_subj_term = {}
+        for o in offering:
+            key = (o['FK_SUBJECT'], o['FK_SEMESTER_PLANNING'])
+            offering_by_subj_term[key] = o
+        
+        # Create semester lookup
+        semester_terms = {}
+        if 'semester_planning' in kwargs:
+            for s in kwargs['semester_planning']:
+                semester_terms[s['SP_ID']] = s['SP_TERM']
+        
+        teacher_ids = {t['T_ID'] for t in teacher}
+        
+        df = OfferedCourses[['lecNo', 'sbjNo', 'term', 'cntLec']].copy()
+        df = df.dropna(subset=['lecNo', 'sbjNo', 'term'])
+        df = df[df['lecNo'] != 0]
+        
         records = []
-        for index, row in some_dataframe.iterrows():
+        id_counter = 1
+        
+        for _, row in df.iterrows():
+            teacher_id = int(row['lecNo'])
+            if teacher_id not in teacher_ids:
+                continue
+            
+            # Find matching offering
+            offering_rec = None
+            for o in offering:
+                if o['FK_SUBJECT'] == str(row['sbjNo']):
+                    offering_rec = o
+                    break
+            
+            if not offering_rec:
+                continue
+            
+            hours = pd.to_numeric(row['cntLec'], errors='coerce')
+            if pd.isna(hours):
+                hours = 0.0
+            
             record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
+                'OA_ID': id_counter,
+                'FK_OFFERING': offering_rec['O_ID'],
+                'FK_TEACHER': teacher_id,
+                'OA_ROLE': None,
+                'OA_ASSIGNED_HOURS': float(hours)
             }
             records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: OFFERING
-        if offering:
-            # Access dependency records for foreign key lookups
-            offering_lookup = {record['ID']: record for record in offering}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in offering_lookup:
-                    # Use dependency record data
-                    dep_record = offering_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+            id_counter += 1
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class SemesterPlanningExtractor(DataExtractor):
@@ -41,38 +44,20 @@ class SemesterPlanningExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing SEMESTER_PLANNING table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+        # Extract unique terms from both CSVs
+        terms_oc = OfferedCourses['term'].drop_duplicates().dropna().tolist()
+        terms_wl = WorkLoad['term'].drop_duplicates().dropna().tolist()
+        all_terms = list(set(terms_oc + terms_wl))
         
-        # Placeholder implementation - replace with actual logic
         records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
+        for idx, term in enumerate(sorted(all_terms), start=1):
+            if term and str(term).strip():
                 record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
+                    'SP_ID': idx,
+                    'SP_TERM': str(term).strip(),
+                    'SP_VERSION_NR': 1,
+                    'SP_IS_FINAL': True
                 }
                 records.append(record)
         

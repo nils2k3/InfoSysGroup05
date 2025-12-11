@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class ProfessorExtractor(DataExtractor):
@@ -30,67 +33,64 @@ class ProfessorExtractor(DataExtractor):
     
     def extract(self, OfferedCourses: pd.DataFrame, teacher: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
-        Extract data for PROFESSOR table.
+        Extract data for PROFESSOR table by filtering TEACHER records and enriching with room data.
+        
+        PROFESSOR is a subtype of TEACHER. This extractor:
+        1. Filters the TEACHER list to only professors (T_ISPROFESSOR = True)
+        2. Looks up office room (P_ROOM) from OfferedCourses using LASTNAME (lecName) matching
         
         Args:
         CSV Data:
-            OfferedCourses: DataFrame loaded from OfferedCourses.csv
+            OfferedCourses: DataFrame loaded from OfferedCourses.csv (for P_ROOM lookup via lecName)
         Dependencies:
-            teacher: List of TEACHER table records from dependency resolution
+            teacher: List of TEACHER table records (filtered by T_ISPROFESSOR flag)
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         
         Returns:
             List of dictionaries representing PROFESSOR table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+        if not teacher:
+            logger.warning("TEACHER data is empty. Cannot extract PROFESSOR records.")
+            return []
         
-        # Placeholder implementation - replace with actual logic
         records = []
         
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
+        # 1. Build lookup from OfferedCourses: Last Name (lecName) -> Room (lecRoom)
+        room_lookup = {}
+        if OfferedCourses is not None and len(OfferedCourses) > 0:
+            df_oc = OfferedCourses.copy()
+            
+            # Standardisiere die Spaltenwerte
+            df_oc['lecName_str'] = df_oc['lecName'].astype(str).str.strip()
+            df_oc['lecRoom_str'] = df_oc['lecRoom'].astype(str).str.strip()
+            
+            # Filter: nur Professoren mit gültigen Rauminformationen
+            professors_courses = df_oc[
+                (df_oc['isprof'] == 'WAHR') & 
+                (df_oc['lecRoom_str'] != 'nan') & 
+                (df_oc['lecRoom_str'].str.len() > 0)
+            ]
+            
+            # Erstelle das Lookup mit NACHNAMEN als Schlüssel (lecName = Nachname in CSV)
+            for _, row in professors_courses.drop_duplicates(subset=['lecName_str']).iterrows():
+                room_lookup[row['lecName_str']] = row['lecRoom_str']
+        
+        # 2. Filter TEACHER list: only extract professors (T_ISPROFESSOR = True)
+        for teacher_record in teacher:
+            if teacher_record.get('T_ISPROFESSOR') == True and teacher_record.get('T_LASTNAME'):
+                teacher_id = teacher_record.get('T_ID')
+                teacher_lastname = teacher_record.get('T_LASTNAME')
+                
+                # Lookup mit NACHNAMEN (T_LASTNAME) in der NACHNAMEN-Map (lecName)
+                room = room_lookup.get(teacher_lastname, 'N/A')
+                
                 record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
+                    'P_ID': teacher_id,
+                    'P_CREDIT_HOUR_ACCOUNT': 0,  # Initialwert (wird später aus DEPUTAT_ACCOUNT berechnet)
+                    'P_ROOM': room
                 }
                 records.append(record)
-
         
-        # Example using dependency data: TEACHER
-        if teacher:
-            # Access dependency records for foreign key lookups
-            teacher_lookup = {record['ID']: record for record in teacher}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in teacher_lookup:
-                    # Use dependency record data
-                    dep_record = teacher_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
+        logger.info(f"{self.__class__.__name__} extracted {len(records)} professor records")
         return records

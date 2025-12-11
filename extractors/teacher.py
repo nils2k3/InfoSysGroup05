@@ -50,7 +50,7 @@ class TeacherExtractor(DataExtractor):
             
         teachers = []
         for index, row in teachersDF.iterrows():
-            if pd.isna(row['lecNo']):
+            if pd.isna(row['lecNo']) or row['lecNo'] == 0:
                 continue
             teacher = {
                 'T_ID': int(row['lecNo']),
@@ -61,5 +61,5 @@ class TeacherExtractor(DataExtractor):
                 'T_ISPROFESSOR': row['isprof'] == 'WAHR'
                 # Add more columns as needed
             }
-            teacher.append(teacher)
+            teachers.append(teacher)
         return teachers

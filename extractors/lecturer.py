@@ -20,12 +20,12 @@ class LecturerExtractor(DataExtractor):
         """
         # Filter for lecturers only (non-professors)
         lecturersDF = OfferedCourses[
-            OfferedCourses['isprof'] == False
+            OfferedCourses['isprof'] == 'FALSCH'
         ][['lecNo', 'supervisor']].drop_duplicates()
         
         lecturers = []
         for index, row in lecturersDF.iterrows():
-            if pd.isna(row['lecNo']):
+            if pd.isna(row['lecNo']) or row['lecNo'] == 0:
                 continue
             
             # Find supervisor using name matching (same as original logic)
@@ -45,7 +45,7 @@ class LecturerExtractor(DataExtractor):
                         break
             
             lecturer = {
-                'L_ID': int(row['lecNo']),  # References TEACHER.T_ID
+                'T_ID': int(row['lecNo']),  # References TEACHER.T_ID
                 'L_STREET_ADDRESS': None,  # Default null as in original
                 'L_CITY': None,           # Default null as in original
                 'L_ZIP': None,            # Default null as in original
@@ -54,6 +54,6 @@ class LecturerExtractor(DataExtractor):
             lecturers.append(lecturer)
         
         # Sort by ID (same as original)
-        lecturers = sorted(lecturers, key=lambda x: x['L_ID'])
+        lecturers = sorted(lecturers, key=lambda x: x['T_ID'])
         
         return lecturers

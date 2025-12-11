@@ -11,8 +11,11 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 
 class ProgrammSubjectRequirementExtractor(DataExtractor):
@@ -44,55 +47,49 @@ class ProgrammSubjectRequirementExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing PROGRAMM_SUBJECT_REQUIREMENT table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
+        """
+        if not study_program or not subject or not semester_planning:
+            logger.warning("Missing dependencies")
+            return []
+        
+        study_prog_names = {sp['ST_NAME'] for sp in study_program}
+        subject_lookup = {s['S_NR']: s for s in subject}
+        semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
+        
+        df = OfferedCourses[['studyPrg', 'sbjNo', 'term', 'sbjlevel', 'numCurr']].copy()
+        df = df.drop_duplicates(subset=['studyPrg', 'sbjNo', 'term'])
+        
         records = []
-        for index, row in some_dataframe.iterrows():
+        id_counter = 1
+        
+        for _, row in df.iterrows():
+            prog = str(row['studyPrg']).strip()
+            sbj_no = str(row['sbjNo']).strip()
+            term = str(row['term']).strip()
+            
+            if prog not in study_prog_names or sbj_no not in subject_lookup or term not in semester_lookup:
+                continue
+            
+            semester = pd.to_numeric(row['sbjlevel'], errors='coerce')
+            if pd.isna(semester):
+                semester = 1
+            
+            hours = pd.to_numeric(row['numCurr'], errors='coerce')
+            if pd.isna(hours):
+                hours = 0.0
+            
             record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
+                'PSR_ID': id_counter,
+                'FK_STUDY_PROGRAM': prog,
+                'FK_SUBJECT': sbj_no,
+                'FK_SEMESTER_PLANNING': semester_lookup[term],
+                'PSR_REQUIRED_HOURS': float(hours),
+                'PSR_TARGET_SEMESTER': int(semester),
+                'PSR_ESTIMATED_NEEDS': None
             }
             records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: STUDY_PROGRAM
-        if study_program:
-            # Access dependency records for foreign key lookups
-            study_program_lookup = {record['ID']: record for record in study_program}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in study_program_lookup:
-                    # Use dependency record data
-                    dep_record = study_program_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+            id_counter += 1
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records
+

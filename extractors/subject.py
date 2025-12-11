@@ -67,7 +67,7 @@ class SubjectExtractor(DataExtractor):
             
             subject = {
                 'S_NR': str(row['sbjNo']),  # Primary key (not auto-increment)
-                'S_STUDY_RPOGRAM': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
+                'S_STUDY_PROGRAM': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
                 'S_NAME': str(row['sbjName']) if not pd.isna(row['sbjName']) else None,
                 'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
                 'S_STUPO_HOURS': safe_numeric(row['numCurr']),
