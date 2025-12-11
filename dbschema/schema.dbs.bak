@@ -7,12 +7,8 @@
 			<column name="C_ID" type="INT" mandatory="y" >
 				<comment><![CDATA[Primary Key]]></comment>
 			</column>
-			<column name="C_TEACHER" type="INT" mandatory="y" >
-				<comment><![CDATA[refers to TEACHER]]></comment>
-			</column>
-			<column name="C_SUBJECT" type="VARCHAR" length="40" mandatory="y" >
-				<comment><![CDATA[refers to SUBJECT]]></comment>
-			</column>
+			<column name="C_TEACHER" prior="T_ID" type="INT" mandatory="y" />
+			<column name="C_SUBJECT" prior="S_NR" type="INT" mandatory="y" />
 			<column name="C_ACTUAL_STUPO_HOURS" type="DECIMAL" length="5" decimal="2" />
 			<column name="C_ACTUAL_SCHEDULE_HOURS" type="DECIMAL" length="5" decimal="2" />
 			<column name="C_CREDITED_HOURS" type="DECIMAL" length="5" decimal="2" />
@@ -20,7 +16,103 @@
 			<column name="C_SEMESTER" type="VARCHAR" length="4" />
 			<index name="pk_COURSE" unique="PRIMARY_KEY" >
 				<column name="C_ID" />
+				<column name="C_TEACHER" />
+				<column name="C_SUBJECT" />
 			</index>
+			<fk name="fk_course_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="C_TEACHER" pk="T_ID" />
+			</fk>
+			<fk name="fk_course_subject" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="C_SUBJECT" pk="S_NR" />
+			</fk>
+		</table>
+		<table name="DEPARTMENT" prior="Entity" >
+			<comment><![CDATA[DEPARTMENT]]></comment>
+			<column name="D_NAME" type="VARCHAR" length="3" mandatory="y" />
+			<index name="pk_Entity" unique="PRIMARY_KEY" >
+				<column name="D_NAME" />
+			</index>
+		</table>
+		<table name="Entity" >
+			<column name="T_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[examinin number]]></comment>
+			</column>
+			<index name="pk_Entity_2" unique="PRIMARY_KEY" >
+				<column name="T_ID" />
+			</index>
+		</table>
+		<table name="LECTURER" prior="Entity" >
+			<comment><![CDATA[REFERS TO TEACHER AND SUPERVISOR.
+Modells lecturer, who are no professors. The primary key is a direct fk. (Subtyping)
+LECTURER is a subtype of TEACHER.]]></comment>
+			<column name="T_ID" type="INT" mandatory="y" />
+			<column name="L_SUPERVISOR" prior="T_ID_001" type="INT" mandatory="y" >
+				<comment><![CDATA[refers on TEACHER.T_ID.]]></comment>
+			</column>
+			<column name="L_STREET_ADDRESS" type="VARCHAR" length="100" >
+				<comment><![CDATA[DEFAULT IS NULL]]></comment>
+			</column>
+			<column name="L_CITY" type="VARCHAR" length="30" >
+				<comment><![CDATA[default is null]]></comment>
+			</column>
+			<column name="L_ZIP" type="VARCHAR" length="30" >
+				<comment><![CDATA[Default is null]]></comment>
+			</column>
+			<index name="pk" unique="PRIMARY_KEY" >
+				<column name="T_ID" />
+				<column name="L_SUPERVISOR" />
+			</index>
+			<fk name="fk_lecturer_lecturer" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="T_ID" pk="T_ID" />
+			</fk>
+			<fk name="fk_LECTURER-SUPERVISOR" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="L_SUPERVISOR" pk="T_ID" />
+			</fk>
+		</table>
+		<table name="POSITION" prior="Entity" >
+			<column name="PO_ID" type="INT" mandatory="y" />
+			<column name="PO_NAME" type="VARCHAR" length="50" mandatory="y" >
+				<comment><![CDATA[Name of the function]]></comment>
+			</column>
+			<index name="pk_Entity_1" unique="PRIMARY_KEY" >
+				<column name="PO_ID" />
+			</index>
+		</table>
+		<table name="POSiTION_PROFESSOR" prior="POSTION_PROFESSOR" >
+			<comment><![CDATA[A professor can have several positions on several terms.
+one position can be assigned to several professors by term.]]></comment>
+			<column name="P_ID" type="INT" mandatory="y" />
+			<column name="PO_ID" type="INT" mandatory="y" />
+			<column name="TERM" type="VARCHAR" length="6" mandatory="y" >
+				<comment><![CDATA[SEMESTER]]></comment>
+			</column>
+			<column name="CREDIT_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
+			<index name="pk" unique="PRIMARY_KEY" >
+				<column name="P_ID" />
+				<column name="PO_ID" />
+			</index>
+			<fk name="fk_postion_professor_professor" to_schema="Planning_Tool" to_table="PROFESSOR" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="P_ID" pk="P_ID" />
+			</fk>
+			<fk name="fk_position_professor_position" to_schema="Planning_Tool" to_table="POSITION" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="PO_ID" pk="PO_ID" />
+			</fk>
+		</table>
+		<table name="PROFESSOR" prior="Entity" >
+			<comment><![CDATA[PROFESSOR IS SUBCLASS OF TEACHER]]></comment>
+			<column name="P_ID" prior="T_ID" type="INT" mandatory="y" />
+			<column name="P_CREDIT_HOUR_ACCOUNT" type="INT" >
+				<comment><![CDATA[Account balance for credit hours]]></comment>
+			</column>
+			<column name="P_ROOM" type="VARCHAR" length="10" mandatory="y" >
+				<comment><![CDATA[Office number]]></comment>
+			</column>
+			<index name="pk" unique="PRIMARY_KEY" >
+				<column name="P_ID" />
+			</index>
+			<fk name="fk_professor_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="P_ID" pk="T_ID" />
+			</fk>
 		</table>
 		<table name="STUDY_PROGRAM" prior="STU_PROGRAM" >
 			<comment><![CDATA[Information about the study programm and its department]]></comment>
@@ -30,12 +122,63 @@
 				<column name="ST_NAME" />
 			</index>
 		</table>
+		<table name="SUBJECT" prior="SUBJE" >
+			<column name="S_NR" type="VARCHAR" length="11" mandatory="y" >
+				<comment><![CDATA[SUBJECT NUMBER]]></comment>
+			</column>
+			<column name="S_STUDY_PROGRAM" prior="ST_NAME" type="VARCHAR" length="3" mandatory="y" />
+			<column name="S_NAME" type="VARCHAR" length="100" />
+			<column name="S_SEMESTER" type="INT" mandatory="y" />
+			<column name="S_STUPO_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
+			<column name="S_SCHEDULE_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
+			<column name="S_COMMENT" type="VARCHAR" length="100" />
+			<column name="S_TYPE" type="VARCHAR" length="14" mandatory="y" >
+				<comment><![CDATA[could be a Wahlpflichtfach or Pflichtfach]]></comment>
+			</column>
+			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
+				<column name="S_NR" />
+				<column name="S_STUDY_PROGRAM" />
+			</index>
+			<fk name="fk_subject_study_program" to_schema="Planning_Tool" to_table="STUDY_PROGRAM" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="S_STUDY_PROGRAM" pk="ST_NAME" />
+			</fk>
+		</table>
+		<table name="TEACHER" prior="Entity_0" >
+			<column name="T_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[EXAMININ NUMBER]]></comment>
+			</column>
+			<column name="T_DEPARTMENT" prior="D_NAME" type="INT" mandatory="y" />
+			<column name="T_NAME" type="VARCHAR" length="40" mandatory="y" >
+				<comment><![CDATA[First Name]]></comment>
+			</column>
+			<column name="T_LASTNAME" type="VARCHAR" length="40" mandatory="y" >
+				<comment><![CDATA[Last Name]]></comment>
+			</column>
+			<column name="T_NOTES" type="VARCHAR" length="100" />
+			<column name="T_ISPROFESSOR" type="BOOLEAN" mandatory="y" >
+				<comment><![CDATA[Is the Teacher professor?]]></comment>
+			</column>
+			<index name="pk_Entity_3" unique="PRIMARY_KEY" >
+				<column name="T_ID" />
+				<column name="T_DEPARTMENT" />
+			</index>
+			<fk name="fk_teacher_department" to_schema="Planning_Tool" to_table="DEPARTMENT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="T_DEPARTMENT" pk="D_NAME" />
+			</fk>
+		</table>
 		<view name="DEPUTAT_ACCOUNT" >
 			<view_script><![CDATA[CREATE VIEW ${nameWithSchemaName} AS ...]]></view_script>
 		</view>
 	</schema>
 	<layout name="PlanningTool" id="a5e67e50-6a13-4a45-809c-ccd7e83f3a73" show_relation="columns" >
-		<entity schema="Planning_Tool" name="COURSE" color="C1D8EE" x="57" y="57" />
-		<entity schema="Planning_Tool" name="STUDY_PROGRAM" color="C1D8EE" x="589" y="76" />
+		<entity schema="Planning_Tool" name="COURSE" color="C1D8EE" x="95" y="57" />
+		<entity schema="Planning_Tool" name="STUDY_PROGRAM" color="C1D8EE" x="95" y="684" />
+		<entity schema="Planning_Tool" name="SUBJECT" color="3986C1" x="57" y="418" />
+		<entity schema="Planning_Tool" name="DEPARTMENT" color="C1D8EE" x="513" y="57" />
+		<entity schema="Planning_Tool" name="TEACHER" color="C1D8EE" x="475" y="228" />
+		<entity schema="Planning_Tool" name="LECTURER" color="C1D8EE" x="836" y="228" />
+		<entity schema="Planning_Tool" name="PROFESSOR" color="C1D8EE" x="418" y="646" />
+		<entity schema="Planning_Tool" name="POSiTION_PROFESSOR" color="C1D8EE" x="855" y="627" />
+		<entity schema="Planning_Tool" name="POSITION" color="C1D8EE" x="1254" y="627" />
 	</layout>
 </project>
