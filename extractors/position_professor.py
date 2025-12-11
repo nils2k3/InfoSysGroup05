@@ -2,9 +2,9 @@
 """
 PositionProfessorExtractor - Data extractor for POSITION_PROFESSOR table
 
-Generated on: 2025-12-11 13:58:13
-CSV Inputs: WorkLoadRedution
-Dependencies: TEACHER, ASSIGNMENT_ROLE
+Generated on: 2025-12-11 14:55:09
+CSV Inputs: WorkLoad
+Dependencies: PROFESSOR, POSITION, SEMESTER_PLANNING
 
 This extractor follows the DataExtractor contract for the database population system.
 Modify the extract() method to implement your specific business logic.
@@ -26,18 +26,19 @@ class PositionProfessorExtractor(DataExtractor):
     @property
     def dependencies(self) -> List[str]:
         """Return list of table names this extractor depends on"""
-        return ['TEACHER', 'ASSIGNMENT_ROLE']
+        return ['PROFESSOR', 'POSITION', 'SEMESTER_PLANNING']
     
-    def extract(self, WorkLoadRedution: pd.DataFrame, teacher: List[Dict[str, Any]], assignment_role: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, WorkLoad: pd.DataFrame, professor: List[Dict[str, Any]], position: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for POSITION_PROFESSOR table.
         
         Args:
         CSV Data:
-            WorkLoadRedution: DataFrame loaded from WorkLoadRedution.csv
+            WorkLoad: DataFrame loaded from WorkLoad.csv
         Dependencies:
-            teacher: List of TEACHER table records from dependency resolution
-            assignment_role: List of ASSIGNMENT_ROLE table records from dependency resolution
+            professor: List of PROFESSOR table records from dependency resolution
+            position: List of POSITION table records from dependency resolution
+            semester_planning: List of SEMESTER_PLANNING table records from dependency resolution
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         
@@ -66,9 +67,9 @@ class PositionProfessorExtractor(DataExtractor):
         records = []
         
         # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: WorkLoadRedution
-        if 'WorkLoadRedution' in locals():
-            df = WorkLoadRedution
+        # Example using primary CSV: WorkLoad
+        if 'WorkLoad' in locals():
+            df = WorkLoad
             for index, row in df.iterrows():
                 # TODO: Replace with actual column mappings
                 record = {
@@ -79,17 +80,17 @@ class PositionProfessorExtractor(DataExtractor):
                 records.append(record)
 
         
-        # Example using dependency data: TEACHER
-        if teacher:
+        # Example using dependency data: PROFESSOR
+        if professor:
             # Access dependency records for foreign key lookups
-            teacher_lookup = {record['ID']: record for record in teacher}
+            professor_lookup = {record['ID']: record for record in professor}
             
             # Example: Use dependency data in extraction logic
             for index, row in some_dataframe.iterrows():
                 dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in teacher_lookup:
+                if dependency_id in professor_lookup:
                     # Use dependency record data
-                    dep_record = teacher_lookup[dependency_id]
+                    dep_record = professor_lookup[dependency_id]
                     # TODO: Implement logic using dependency data
                     pass
         

@@ -2,9 +2,9 @@
 """
 OfferingExtractor - Data extractor for OFFERING table
 
-Generated on: 2025-12-11 13:58:13
+Generated on: 2025-12-11 14:55:09
 CSV Inputs: OfferedCourses
-Dependencies: COURSE, SEMESTER_PLANNING
+Dependencies: SUBJECT, SEMESTER_PLANNING
 
 This extractor follows the DataExtractor contract for the database population system.
 Modify the extract() method to implement your specific business logic.
@@ -26,9 +26,9 @@ class OfferingExtractor(DataExtractor):
     @property
     def dependencies(self) -> List[str]:
         """Return list of table names this extractor depends on"""
-        return ['COURSE', 'SEMESTER_PLANNING']
+        return ['SUBJECT', 'SEMESTER_PLANNING']
     
-    def extract(self, OfferedCourses: pd.DataFrame, course: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, OfferedCourses: pd.DataFrame, subject: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for OFFERING table.
         
@@ -36,7 +36,7 @@ class OfferingExtractor(DataExtractor):
         CSV Data:
             OfferedCourses: DataFrame loaded from OfferedCourses.csv
         Dependencies:
-            course: List of COURSE table records from dependency resolution
+            subject: List of SUBJECT table records from dependency resolution
             semester_planning: List of SEMESTER_PLANNING table records from dependency resolution
         Additional:
             **kwargs: Additional parameters passed by the extraction system
@@ -79,17 +79,17 @@ class OfferingExtractor(DataExtractor):
                 records.append(record)
 
         
-        # Example using dependency data: COURSE
-        if course:
+        # Example using dependency data: SUBJECT
+        if subject:
             # Access dependency records for foreign key lookups
-            course_lookup = {record['ID']: record for record in course}
+            subject_lookup = {record['ID']: record for record in subject}
             
             # Example: Use dependency data in extraction logic
             for index, row in some_dataframe.iterrows():
                 dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in course_lookup:
+                if dependency_id in subject_lookup:
                     # Use dependency record data
-                    dep_record = course_lookup[dependency_id]
+                    dep_record = subject_lookup[dependency_id]
                     # TODO: Implement logic using dependency data
                     pass
         

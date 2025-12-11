@@ -2,9 +2,9 @@
 """
 SubjectExtractor - Data extractor for SUBJECT table
 
-Generated on: 2025-12-11 13:58:13
+Generated on: 2025-12-11 14:55:09
 CSV Inputs: OfferedCourses
-Dependencies: None
+Dependencies: STUDY_PROGRAM
 
 This extractor follows the DataExtractor contract for the database population system.
 Modify the extract() method to implement your specific business logic.
@@ -26,15 +26,17 @@ class SubjectExtractor(DataExtractor):
     @property
     def dependencies(self) -> List[str]:
         """Return list of table names this extractor depends on"""
-        return []
+        return ['STUDY_PROGRAM']
     
-    def extract(self, OfferedCourses: pd.DataFrame, **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, OfferedCourses: pd.DataFrame, study_program: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for SUBJECT table.
         
         Args:
         CSV Data:
             OfferedCourses: DataFrame loaded from OfferedCourses.csv
+        Dependencies:
+            study_program: List of STUDY_PROGRAM table records from dependency resolution
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         
@@ -74,6 +76,21 @@ class SubjectExtractor(DataExtractor):
                     # Add more columns based on your table schema
                 }
                 records.append(record)
+
+        
+        # Example using dependency data: STUDY_PROGRAM
+        if study_program:
+            # Access dependency records for foreign key lookups
+            study_program_lookup = {record['ID']: record for record in study_program}
+            
+            # Example: Use dependency data in extraction logic
+            for index, row in some_dataframe.iterrows():
+                dependency_id = row.get('dependency_id')  # Replace with actual FK column
+                if dependency_id in study_program_lookup:
+                    # Use dependency record data
+                    dep_record = study_program_lookup[dependency_id]
+                    # TODO: Implement logic using dependency data
+                    pass
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

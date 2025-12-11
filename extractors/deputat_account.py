@@ -2,7 +2,7 @@
 """
 DeputatAccountExtractor - Data extractor for DEPUTAT_ACCOUNT table
 
-Generated on: 2025-12-11 13:58:13
+Generated on: 2025-12-11 14:55:09
 CSV Inputs: None
 Dependencies: TEACHER, SEMESTER_PLANNING
 

@@ -2,7 +2,7 @@
 """
 StudyProgramExtractor - Data extractor for STUDY_PROGRAM table
 
-Generated on: 2025-12-11 13:58:13
+Generated on: 2025-12-11 14:55:09
 CSV Inputs: OfferedCourses
 Dependencies: None
 

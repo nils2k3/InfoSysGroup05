@@ -2,8 +2,8 @@
 """
 TeacherExtractor - Data extractor for TEACHER table
 
-Generated on: 2025-12-11 13:58:13
-CSV Inputs: OfferedCourses, WorkLoadRedution
+Generated on: 2025-12-11 14:55:09
+CSV Inputs: OfferedCourses, WorkLoad
 Dependencies: None
 
 This extractor follows the DataExtractor contract for the database population system.
@@ -28,14 +28,14 @@ class TeacherExtractor(DataExtractor):
         """Return list of table names this extractor depends on"""
         return []
     
-    def extract(self, OfferedCourses: pd.DataFrame, WorkLoadRedution: pd.DataFrame, **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, OfferedCourses: pd.DataFrame, WorkLoad: pd.DataFrame, **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for TEACHER table.
         
         Args:
         CSV Data:
             OfferedCourses: DataFrame loaded from OfferedCourses.csv
-            WorkLoadRedution: DataFrame loaded from WorkLoadRedution.csv
+            WorkLoad: DataFrame loaded from WorkLoad.csv
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         

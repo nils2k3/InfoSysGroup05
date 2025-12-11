@@ -2,9 +2,9 @@
 """
 ServiceRequestExtractor - Data extractor for SERVICE_REQUEST table
 
-Generated on: 2025-12-11 13:58:13
+Generated on: 2025-12-11 14:55:10
 CSV Inputs: OfferedCourses
-Dependencies: DEPARTMENT, SEMESTER_PLANNING
+Dependencies: SUBJECT, SEMESTER_PLANNING, DEPARTMENT
 
 This extractor follows the DataExtractor contract for the database population system.
 Modify the extract() method to implement your specific business logic.
@@ -26,9 +26,9 @@ class ServiceRequestExtractor(DataExtractor):
     @property
     def dependencies(self) -> List[str]:
         """Return list of table names this extractor depends on"""
-        return ['DEPARTMENT', 'SEMESTER_PLANNING']
+        return ['SUBJECT', 'SEMESTER_PLANNING', 'DEPARTMENT']
     
-    def extract(self, OfferedCourses: pd.DataFrame, department: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, OfferedCourses: pd.DataFrame, subject: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], department: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for SERVICE_REQUEST table.
         
@@ -36,8 +36,9 @@ class ServiceRequestExtractor(DataExtractor):
         CSV Data:
             OfferedCourses: DataFrame loaded from OfferedCourses.csv
         Dependencies:
-            department: List of DEPARTMENT table records from dependency resolution
+            subject: List of SUBJECT table records from dependency resolution
             semester_planning: List of SEMESTER_PLANNING table records from dependency resolution
+            department: List of DEPARTMENT table records from dependency resolution
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         
@@ -79,17 +80,17 @@ class ServiceRequestExtractor(DataExtractor):
                 records.append(record)
 
         
-        # Example using dependency data: DEPARTMENT
-        if department:
+        # Example using dependency data: SUBJECT
+        if subject:
             # Access dependency records for foreign key lookups
-            department_lookup = {record['ID']: record for record in department}
+            subject_lookup = {record['ID']: record for record in subject}
             
             # Example: Use dependency data in extraction logic
             for index, row in some_dataframe.iterrows():
                 dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in department_lookup:
+                if dependency_id in subject_lookup:
                     # Use dependency record data
-                    dep_record = department_lookup[dependency_id]
+                    dep_record = subject_lookup[dependency_id]
                     # TODO: Implement logic using dependency data
                     pass
         
