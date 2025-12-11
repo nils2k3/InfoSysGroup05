@@ -29,69 +29,30 @@ class OfferingExtractor(DataExtractor):
         return ['SUBJECT', 'SEMESTER_PLANNING']
     
     def extract(self, OfferedCourses: pd.DataFrame, subject: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
-        """
-        Extract data for OFFERING table.
-        
-        Args:
-        CSV Data:
-            OfferedCourses: DataFrame loaded from OfferedCourses.csv
-        Dependencies:
-            subject: List of SUBJECT table records from dependency resolution
-            semester_planning: List of SEMESTER_PLANNING table records from dependency resolution
-        Additional:
-            **kwargs: Additional parameters passed by the extraction system
-        
-        Returns:
-            List of dictionaries representing OFFERING table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
 
-        
-        # Example using dependency data: SUBJECT
-        if subject:
-            # Access dependency records for foreign key lookups
-            subject_lookup = {record['ID']: record for record in subject}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in subject_lookup:
-                    # Use dependency record data
-                    dep_record = subject_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+        offeringDF = OfferedCourses[['sbjNo', 'term', 'numSchd', 'elective']].drop_duplicates() 
+
+        # Map subject numbers to their IDs
+        subject_nr_to_id = {s['S_NR']: s['S_ID'] for s in subject}
+
+        # Map terms to their IDs
+        term_name_to_id = {sem['SP_NAME']: sem['SP_ID'] for sem in semester_planning}
+
+        # Replace subject numbers with their corresponding subject IDs
+        offeringDF['S_ID'] = offeringDF['sbjNo'].map(subject_nr_to_id)
+
+        # Replace terms with their corresponding semester planning IDs
+        offeringDF['SP_ID'] = offeringDF['term'].map(term_name_to_id)
+
+        result = []
+        for i, offeringDF in enumerate(offeringDF.to_dict(orient='records')):
+            offering = {
+                'O_ID': i + 1,  # Auto-incrementing ID
+                'FK_SUBJECT': offeringDF['S_ID'],  # Foreign key to SUBJECT.S_ID
+                'FK_SEMESTER_PLANNING': offeringDF['SP_ID'],  # Foreign key to SEMESTER_PLANNING.SP_ID
+                'O_PLANNED_HOURS': int(offeringDF['numSchd']) if not pd.isna(offeringDF['numSchd']) else 0,
+                'O_TYPE': bool(offeringDF['elective']) if not pd.isna(offeringDF['elective']) else False
+            }
+            result.append(offering)
+
+        return result
