@@ -30,50 +30,18 @@ class PositionExtractor(DataExtractor):
     
     def extract(self, WorkLoad: pd.DataFrame, **kwargs) -> List[Dict[str, Any]]:
         """
-        Extract data for POSITION table.
-        
-        Args:
-        CSV Data:
-            WorkLoad: DataFrame loaded from WorkLoad.csv
-        Additional:
-            **kwargs: Additional parameters passed by the extraction system
-        
-        Returns:
-            List of dictionaries representing POSITION table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
+        Extract unique job titles and assign auto-incrementing IDs.
+        Same logic as original getPositions function.
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+        # Get unique job titles, remove duplicates and nulls
+        positions = WorkLoad['job title'].drop_duplicates().dropna().tolist()
         
-        # Placeholder implementation - replace with actual logic
-        records = []
+        result = []
+        for i, position in enumerate(positions, 1):  # Start auto-increment at 1
+            if position and str(position).strip():
+                result.append({
+                    'PO_ID': i,  # Auto-incrementing ID
+                    'PO_NAME': str(position).strip()
+                })
         
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: WorkLoad
-        if 'WorkLoad' in locals():
-            df = WorkLoad
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+        return result

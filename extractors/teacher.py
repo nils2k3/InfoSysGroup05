@@ -13,6 +13,8 @@ Modify the extract() method to implement your specific business logic.
 import pandas as pd
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+import logging
+logger = logging.getLogger(__name__)
 
 
 class TeacherExtractor(DataExtractor):
@@ -25,8 +27,8 @@ class TeacherExtractor(DataExtractor):
     
     @property
     def dependencies(self) -> List[str]:
-        """Return list of table names this extractor depends on"""
-        return []
+        """Return list of table names this extractor depends on, aka all foreign key references"""
+        return ['DEPARTMENT']
     
     def extract(self, OfferedCourses: pd.DataFrame, WorkLoad: pd.DataFrame, **kwargs) -> List[Dict[str, Any]]:
         """
@@ -41,40 +43,23 @@ class TeacherExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing TEACHER table records
+        """
+        teachersDF = OfferedCourses[[
+            'lecNo', 'lec1stn', 'lecName', 'lecDept', 'lecNotes', 'isprof'
+        ]].drop_duplicates()
             
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
+        teachers = []
+        for index, row in teachersDF.iterrows():
+            if pd.isna(row['lecNo']):
+                continue
+            teacher = {
+                'T_ID': int(row['lecNo']),
+                'T_NAME': str(row['lec1stn']) if not pd.isna(row['lec1stn']) else None,
+                'T_LASTNAME': str(row['lecName']) if not pd.isna(row['lecName']) else None,
+                'T_DEPARTMENT': str(row['lecDept']) if not pd.isna(row['lecDept']) else None,
+                'T_NOTES': str(row['lecNotes']) if not pd.isna(row['lecNotes']) else None,
+                'T_ISPROFESSOR': row['isprof'] == 'WAHR'
                 # Add more columns as needed
             }
-            records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+            teacher.append(teacher)
+        return teachers

@@ -42,55 +42,42 @@ class SubjectExtractor(DataExtractor):
         
         Returns:
             List of dictionaries representing SUBJECT table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-
-        
-        # Example using dependency data: STUDY_PROGRAM
-        if study_program:
-            # Access dependency records for foreign key lookups
-            study_program_lookup = {record['ID']: record for record in study_program}
             
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in study_program_lookup:
-                    # Use dependency record data
-                    dep_record = study_program_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+        # Get relevant columns and remove duplicates
+        subjectsDF = OfferedCourses[[
+            'sbjNo', 'sbjName', 'sbjlevel', 'sbjNotes', 'elective', 'studyPrg', 'numCurr', 'numSchd'
+        ]].drop_duplicates()
         
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+        def safe_numeric(value):
+            """Convert numeric strings with comma decimal separator to float"""
+            if pd.isna(value):
+                return 0.0
+            if isinstance(value, str):
+                try:
+                    return float(value.replace(',', '.'))
+                except ValueError:
+                    return 0.0
+            return float(value)
+        
+        subjects = []
+        for index, row in subjectsDF.iterrows():
+            if pd.isna(row['sbjNo']):
+                continue
+            
+            subject = {
+                'S_NR': str(row['sbjNo']),  # Primary key (not auto-increment)
+                'S_STUDY_RPOGRAM': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
+                'S_NAME': str(row['sbjName']) if not pd.isna(row['sbjName']) else None,
+                'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
+                'S_STUPO_HOURS': safe_numeric(row['numCurr']),
+                'S_SCHEDULE_HOURS': safe_numeric(row['numSchd']),
+                'S_COMMENT': str(row['sbjNotes']) if not pd.isna(row['sbjNotes']) else None,
+                'S_TYPE': str(row['elective']) if not pd.isna(row['elective']) else None,
+            }
+            subjects.append(subject)
+        
+        # Sort by subject number (same as original)
+        subjects = sorted(subjects, key=lambda x: x['S_NR'] or '')
+        
+        return subjects

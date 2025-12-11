@@ -10,6 +10,7 @@ This extractor follows the DataExtractor contract for the database population sy
 Modify the extract() method to implement your specific business logic.
 """
 
+from tkinter.font import names
 import pandas as pd
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
@@ -55,25 +56,20 @@ class StudyProgramExtractor(DataExtractor):
         return records
         ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+        studyPrograms = []
+        for name in names:
+            if not name or pd.isna(name):
+                continue
+            
+            # Find most common department (srvClient) for this study program
+            program_data = OfferedCourses[OfferedCourses['studyPrg'] == name]
+            department_counts = program_data['srvClient'].value_counts()
+            
+            if len(department_counts) > 0:
+                most_common_dept = department_counts.index[0]
+                studyPrograms.append({
+                    'ST_NAME': str(name),
+                    'ST_DEPARTMENT': str(most_common_dept)
+                })
         
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+        return studyPrograms

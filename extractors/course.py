@@ -59,40 +59,59 @@ class CourseExtractor(DataExtractor):
         return records
         ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
 
+        # Get relevant columns and remove duplicates
+        coursesDF = OfferedCourses[[
+            'lecNo', 'sbjNo', 'assNotes', 'term', 'cntCurr', 'cntLec', 'cntSchd'
+        ]].drop_duplicates()
+
+        # Create lookup sets for validation (same as original)
+        valid_teacher_ids = {t['T_ID'] for t in teacher}
+        valid_subject_nrs = {s['S_NR'] for s in subject}
+        valid_offering_ids = {o['OA_ID'] for o in offering}
         
-        # Example using dependency data: OFFERING
-        if offering:
-            # Access dependency records for foreign key lookups
-            offering_lookup = {record['ID']: record for record in offering}
+        def safe_numeric(value):
+            """Convert numeric strings with comma decimal separator to float"""
+            if pd.isna(value):
+                return 0.0
+            if isinstance(value, str):
+                try:
+                    return float(value.replace(',', '.'))
+                except ValueError:
+                    return 0.0
+            return float(value)
+        
+        courses = []
+        for index, row in coursesDF.iterrows():
+            # Skip rows with missing required data
+            if pd.isna(row['lecNo']) or pd.isna(row['sbjNo']) or pd.isna(row['oa_id']):
+                continue
             
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in offering_lookup:
-                    # Use dependency record data
-                    dep_record = offering_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
+            teacher_id = int(row['lecNo'])
+            subject_nr = str(row['sbjNo'])
+            offering_id = int(row['oa_id']) 
+            
+            # Validate foreign keys (same as original logic)
+            if teacher_id not in valid_teacher_ids:
+                continue  # Skip courses with invalid teacher
+            
+            if subject_nr not in valid_subject_nrs:
+                continue  # Skip courses with invalid subject
+
+            if offering_id not in valid_offering_ids:
+                continue  # Skip courses with invalid offering
+            
+            course = {
+                'C_ID': index + 1,  # Auto-incrementing ID (same as original)
+                'C_TEACHER': teacher_id,  # Foreign key to TEACHER.T_ID
+                'C_SUBJECT': subject_nr,  # Foreign key to SUBJECT.S_NR
+                'C_ACTUAL_STUPO_HOURS': safe_numeric(row['cntCurr']),
+                'C_ACTUAL_SCHEDULE_HOURS': safe_numeric(row['cntSchd']),
+                'C_CREDITED_HOURS': safe_numeric(row['cntLec']),
+                'C_TEACHER_COMMENT': str(row['assNotes']) if not pd.isna(row['assNotes']) else None,
+                'C_SEMESTER': str(row['term']) if not pd.isna(row['term']) else None,
+                'FK_OFFERING': offering_id  # Foreign key to OFFERING.OA_ID
+            }
+            courses.append(course)
         
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+        return courses

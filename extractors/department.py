@@ -42,7 +42,6 @@ class DepartmentExtractor(DataExtractor):
         Returns:
             List of dictionaries representing DEPARTMENT table records
             
-        TODO: Implement your extraction logic here
         Example structure:
         ```python
         records = []
@@ -56,25 +55,22 @@ class DepartmentExtractor(DataExtractor):
         return records
         ```
         """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
+
+        # Combine all department-related columns
+        all_departments = (
+            OfferedCourses['srvProvider'].tolist() + 
+            OfferedCourses['srvClient'].tolist() + 
+            OfferedCourses['lecDept'].tolist()
+        )
+
+        # Remove duplicates and null values
+        departments = pd.Series(all_departments).drop_duplicates().dropna().tolist()
+
+        # Filter out empty strings and clean data
+        clean_departments = []
+        for dept in departments:
+            if dept and str(dept).strip():
+                clean_departments.append({'D_NAME': str(dept).strip()})
         
-        # Placeholder implementation - replace with actual logic
-        records = []
+        return clean_departments
         
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: OfferedCourses
-        if 'OfferedCourses' in locals():
-            df = OfferedCourses
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
