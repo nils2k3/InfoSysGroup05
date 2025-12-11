@@ -21,9 +21,6 @@
 			</column>
 			<index name="pk_COURSE" unique="PRIMARY_KEY" >
 				<column name="C_ID" />
-				<column name="C_TEACHER" />
-				<column name="C_SUBJECT" />
-				<column name="FK_OFFERING" />
 			</index>
 			<fk name="fk_course_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="C_TEACHER" pk="T_ID" />
@@ -38,7 +35,7 @@
 		<table name="DEPARTMENT" prior="Entity" >
 			<comment><![CDATA[DEPARTMENT]]></comment>
 			<column name="D_NAME" type="VARCHAR" length="3" mandatory="y" />
-			<index name="pk_Entity" unique="PRIMARY_KEY" >
+			<index name="pk_DEPARTMENT" unique="PRIMARY_KEY" >
 				<column name="D_NAME" />
 			</index>
 		</table>
@@ -56,10 +53,8 @@
 			<column name="ACC_DEBIT_HOURS" type="DECIMAL" length="5" decimal="2" />
 			<column name="ACC_BALANCE" type="DECIMAL" length="5" decimal="2" />
 			<column name="ACC_CARRYOVER" type="DECIMAL" length="5" decimal="2" />
-			<index name="pk_DEPUTAT_ACC" unique="PRIMARY_KEY" >
+			<index name="pk_DEPUTAT_ACCOUNT" unique="PRIMARY_KEY" >
 				<column name="ACC_ID" />
-				<column name="FK_TEACHER" />
-				<column name="FK_SEMESTER_PLANNING" />
 			</index>
 			<fk name="fk_deputat_account_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_TEACHER" pk="T_ID" />
@@ -67,14 +62,6 @@
 			<fk name="fk_deputat_account" to_schema="Planning_Tool" to_table="SEMESTER_PLANNING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_SEMESTER_PLANNING" pk="SP_ID" />
 			</fk>
-		</table>
-		<table name="Entity" >
-			<column name="T_ID" type="INT" mandatory="y" >
-				<comment><![CDATA[examinin number]]></comment>
-			</column>
-			<index name="pk_Entity_2" unique="PRIMARY_KEY" >
-				<column name="T_ID" />
-			</index>
 		</table>
 		<table name="LECTURER" prior="Entity" >
 			<comment><![CDATA[REFERS TO TEACHER AND SUPERVISOR.
@@ -93,9 +80,8 @@ LECTURER is a subtype of TEACHER.]]></comment>
 			<column name="L_ZIP" type="VARCHAR" length="30" >
 				<comment><![CDATA[Default is null]]></comment>
 			</column>
-			<index name="pk" unique="PRIMARY_KEY" >
+			<index name="pk_LECTURER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
-				<column name="L_SUPERVISOR" />
 			</index>
 			<fk name="fk_lecturer_lecturer" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="T_ID" pk="T_ID" />
@@ -116,13 +102,11 @@ LECTURER is a subtype of TEACHER.]]></comment>
 			<column name="O_PLANNED_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" >
 				<comment><![CDATA[Real planned hours/week]]></comment>
 			</column>
-			<column name="O_TYPE" type="VARCHAR" length="10" >
-				<comment><![CDATA[Is it Vorlesung/Labor?]]></comment>
+			<column name="O_TYPE" type="BOOLEAN" >
+				<comment><![CDATA[Is it elective (TRUE) or mandatory (FALSE)?]]></comment>
 			</column>
 			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
 				<column name="O_ID" />
-				<column name="FK_SUBJECT" />
-				<column name="FK_SEMESTER_PLANNING" />
 			</index>
 			<fk name="fk_offering_subject" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_SUBJECT" pk="S_NR" />
@@ -148,8 +132,6 @@ LECTURER is a subtype of TEACHER.]]></comment>
 			</column>
 			<index name="pk_OFFERING_ASSIGNMENT" unique="PRIMARY_KEY" >
 				<column name="OA_ID" />
-				<column name="FK_OFFERING" />
-				<column name="FK_TEACHER" />
 			</index>
 			<fk name="fk_offering_assignment" to_schema="Planning_Tool" to_table="OFFERING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_OFFERING" pk="O_ID" />
@@ -163,7 +145,7 @@ LECTURER is a subtype of TEACHER.]]></comment>
 			<column name="PO_NAME" type="VARCHAR" length="50" mandatory="y" >
 				<comment><![CDATA[Name of the function]]></comment>
 			</column>
-			<index name="pk_Entity_1" unique="PRIMARY_KEY" >
+			<index name="pk_POSITION" unique="PRIMARY_KEY" >
 				<column name="PO_ID" />
 			</index>
 		</table>
@@ -176,9 +158,10 @@ one position can be assigned to several professors by term.]]></comment>
 				<comment><![CDATA[SEMESTER]]></comment>
 			</column>
 			<column name="CREDIT_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
-			<index name="pk" unique="PRIMARY_KEY" >
+			<index name="pk_POSITION_PROFESSOR" unique="PRIMARY_KEY" >
 				<column name="P_ID" />
 				<column name="PO_ID" />
+				<column name="TERM" />
 			</index>
 			<fk name="fk_postion_professor_professor" to_schema="Planning_Tool" to_table="PROFESSOR" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="P_ID" pk="P_ID" />
@@ -196,7 +179,7 @@ one position can be assigned to several professors by term.]]></comment>
 			<column name="P_ROOM" type="VARCHAR" length="10" mandatory="y" >
 				<comment><![CDATA[Office number]]></comment>
 			</column>
-			<index name="pk" unique="PRIMARY_KEY" >
+			<index name="pk_PROFESSOR" unique="PRIMARY_KEY" >
 				<column name="P_ID" />
 			</index>
 			<fk name="fk_professor_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
@@ -220,9 +203,6 @@ one position can be assigned to several professors by term.]]></comment>
 			</column>
 			<index name="pk_PROGRAMM_SUBJECT_REQUIREMENT" unique="PRIMARY_KEY" >
 				<column name="PSR_ID" />
-				<column name="FK_STUDY_PROGRAM" />
-				<column name="FK_SUBJECT" />
-				<column name="FK_SEMESTER_PLANNING" />
 			</index>
 			<fk name="fk_programm_subject_requirement" to_schema="Planning_Tool" to_table="STUDY_PROGRAM" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_STUDY_PROGRAM" pk="ST_NAME" />
@@ -275,10 +255,6 @@ one position can be assigned to several professors by term.]]></comment>
 			</column>
 			<index name="pk_SERVICE_REQUEST" unique="PRIMARY_KEY" >
 				<column name="SR_ID" />
-				<column name="FK_SUBJECT" />
-				<column name="FK_SEMESTER_PLANNING" />
-				<column name="SR_EXPORTING_FACULTY" />
-				<column name="SR_IMPORTING_FACULTY" />
 			</index>
 			<fk name="fk_service_request_subjects" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="FK_SUBJECT" pk="S_NR" />
@@ -297,7 +273,7 @@ one position can be assigned to several professors by term.]]></comment>
 			<comment><![CDATA[Information about the study programm and its department]]></comment>
 			<column name="ST_NAME" type="VARCHAR" length="3" mandatory="y" />
 			<column name="ST_DEPARTMENT" type="VARCHAR" length="3" mandatory="y" />
-			<index name="pk_DEGREE_PROGRAM" unique="PRIMARY_KEY" >
+			<index name="pk_STUDY_PROGRAM" unique="PRIMARY_KEY" >
 				<column name="ST_NAME" />
 			</index>
 		</table>
@@ -306,7 +282,7 @@ one position can be assigned to several professors by term.]]></comment>
 				<comment><![CDATA[SUBJECT NUMBER]]></comment>
 			</column>
 			<column name="S_STUDY_PROGRAM" prior="ST_NAME" type="VARCHAR" length="3" mandatory="y" />
-			<column name="S_NAME" type="VARCHAR" length="100" />
+			<column name="S_NAME" type="VARCHAR" length="100" mandatory="y" />
 			<column name="S_SEMESTER" type="INT" mandatory="y" />
 			<column name="S_STUPO_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
 			<column name="S_SCHEDULE_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" />
@@ -316,7 +292,6 @@ one position can be assigned to several professors by term.]]></comment>
 			</column>
 			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
 				<column name="S_NR" />
-				<column name="S_STUDY_PROGRAM" />
 			</index>
 			<fk name="fk_subject_study_program" to_schema="Planning_Tool" to_table="STUDY_PROGRAM" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="S_STUDY_PROGRAM" pk="ST_NAME" />
@@ -337,9 +312,8 @@ one position can be assigned to several professors by term.]]></comment>
 			<column name="T_ISPROFESSOR" type="BOOLEAN" mandatory="y" >
 				<comment><![CDATA[Is the Teacher professor?]]></comment>
 			</column>
-			<index name="pk_Entity_3" unique="PRIMARY_KEY" >
+			<index name="pk_TEACHER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
-				<column name="T_DEPARTMENT" />
 			</index>
 			<fk name="fk_teacher_department" to_schema="Planning_Tool" to_table="DEPARTMENT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="T_DEPARTMENT" pk="D_NAME" />
