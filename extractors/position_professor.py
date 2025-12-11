@@ -29,70 +29,40 @@ class PositionProfessorExtractor(DataExtractor):
         return ['PROFESSOR', 'POSITION', 'SEMESTER_PLANNING']
     
     def extract(self, WorkLoad: pd.DataFrame, professor: List[Dict[str, Any]], position: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
-        """
-        Extract data for POSITION_PROFESSOR table.
         
-        Args:
-        CSV Data:
-            WorkLoad: DataFrame loaded from WorkLoad.csv
-        Dependencies:
-            professor: List of PROFESSOR table records from dependency resolution
-            position: List of POSITION table records from dependency resolution
-            semester_planning: List of SEMESTER_PLANNING table records from dependency resolution
-        Additional:
-            **kwargs: Additional parameters passed by the extraction system
-        
-        Returns:
-            List of dictionaries representing POSITION_PROFESSOR table records
-            
-        TODO: Implement your extraction logic here
-        Example structure:
-        ```python
-        records = []
-        for index, row in some_dataframe.iterrows():
-            record = {
-                'COLUMN_1': row['source_column_1'],
-                'COLUMN_2': row['source_column_2'],
-                # Add more columns as needed
-            }
-            records.append(record)
-        return records
-        ```
-        """
-        # TODO: Replace this placeholder with your extraction logic
-        logger.warning(f"{self.__class__.__name__} is using placeholder implementation")
-        logger.info(f"Available parameters: {list(kwargs.keys()) if 'kwargs' in locals() else 'None'}")
-        
-        # Placeholder implementation - replace with actual logic
-        records = []
-        
-        # Example: If you have a DataFrame parameter, process it
-        # Example using primary CSV: WorkLoad
-        if 'WorkLoad' in locals():
-            df = WorkLoad
-            for index, row in df.iterrows():
-                # TODO: Replace with actual column mappings
-                record = {
-                    'ID': row.get('id', index),  # Replace 'id' with actual column
-                    'NAME': row.get('name', f'Record_{index}'),  # Replace with actual column
-                    # Add more columns based on your table schema
-                }
-                records.append(record)
+        professorPositionDF = WorkLoad[['term', 'name', 'job title', 'reduction']].drop_duplicates()
+
+        # Map position names to their IDs
+        position_name_to_id = {pos['PO_NAME']: pos['PO_ID'] for pos in position}
+
+        # Map terms to their IDs
+        term_name_to_id = {sem['SP_NAME']: sem['SP_ID'] for sem in semester_planning}
+
+        # Map professor names to their IDs
+        professor_name_to_id = {prof['P_NAME']: prof['P_ID'] for prof in professor}
+
+
+
+
+        # Replace job titles with their corresponding position IDs
+        professorPositionDF['PO_ID'] = professorPositionDF['job title'].map(position_name_to_id)
+
+        # Replace terms with their corresponding semester planning IDs
+        professorPositionDF['term'] = professorPositionDF['term'].map(term_name_to_id)
+
+        # Replace professor names with their corresponding professor IDs
+        professorPositionDF['P_ID'] = professorPositionDF['name'].map(professor_name_to_id)
+
 
         
-        # Example using dependency data: PROFESSOR
-        if professor:
-            # Access dependency records for foreign key lookups
-            professor_lookup = {record['ID']: record for record in professor}
-            
-            # Example: Use dependency data in extraction logic
-            for index, row in some_dataframe.iterrows():
-                dependency_id = row.get('dependency_id')  # Replace with actual FK column
-                if dependency_id in professor_lookup:
-                    # Use dependency record data
-                    dep_record = professor_lookup[dependency_id]
-                    # TODO: Implement logic using dependency data
-                    pass
-        
-        logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
-        return records
+
+        result = []
+        for professorPositionDF in professorPositionDF.to_dict(orient='records'):  
+                if professorPositionDF and str(professorPositionDF).strip():
+                    result.append({
+                        'P_ID': professorPositionDF['P_ID'],  # Foreign key to PROFESSOR.P_ID
+                        'PO_ID': professorPositionDF['PO_ID'],  # Foreign key to POSITION.P_ID
+                        'TERM': professorPositionDF['term'], # Foreign key to SEMESTER_PLANNING.SP_ID
+                        'CREDIT_HOURS': int(str(professorPositionDF['reduction']).strip())
+                    })
+        return result
