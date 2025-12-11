@@ -33,6 +33,32 @@
 				<column name="D_NAME" />
 			</index>
 		</table>
+		<table name="DEPUTAT_ACCOUNT" prior="DEPUTAT_ACC" >
+			<comment><![CDATA[It enables the ability to settle accounts (debit/credit) and stores the balances in historical form.]]></comment>
+			<column name="ACC_ID" type="INT" mandatory="y" />
+			<column name="FK_TEACHER" prior="T_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to TEACHER.T_ID]]></comment>
+			</column>
+			<column name="FK_SEMESTER_PLANNING" prior="SP_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to SEMESTER_PLANNING.SP_ID]]></comment>
+			</column>
+			<column name="ACC_BASELINE_HOURS" type="DECIMAL" length="5" decimal="2" />
+			<column name="ACC_CREDIT_HOURS" type="DECIMAL" length="5" decimal="2" />
+			<column name="ACC_DEBIT_HOURS" type="DECIMAL" length="5" decimal="2" />
+			<column name="ACC_BALANCE" type="DECIMAL" length="5" decimal="2" />
+			<column name="ACC_CARRYOVER" type="DECIMAL" length="5" decimal="2" />
+			<index name="pk_DEPUTAT_ACC" unique="PRIMARY_KEY" >
+				<column name="ACC_ID" />
+				<column name="FK_TEACHER" />
+				<column name="FK_SEMESTER_PLANNING" />
+			</index>
+			<fk name="fk_deputat_account_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_TEACHER" pk="T_ID" />
+			</fk>
+			<fk name="fk_deputat_account" to_schema="Planning_Tool" to_table="SEMESTER_PLANNING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SEMESTER_PLANNING" pk="SP_ID" />
+			</fk>
+		</table>
 		<table name="Entity" >
 			<column name="T_ID" type="INT" mandatory="y" >
 				<comment><![CDATA[examinin number]]></comment>
@@ -67,6 +93,60 @@ LECTURER is a subtype of TEACHER.]]></comment>
 			</fk>
 			<fk name="fk_LECTURER-SUPERVISOR" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="L_SUPERVISOR" pk="T_ID" />
+			</fk>
+		</table>
+		<table name="OFFERING" prior="OFFER" >
+			<comment><![CDATA[This entity represents the concrete implementation of a subject within a planning cycle (semester). It differs from the historical COURSE table because it stores planning data.]]></comment>
+			<column name="O_ID" type="INT" mandatory="y" />
+			<column name="FK_SUBJECT" prior="S_NR" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to SUBJECT.S_NR]]></comment>
+			</column>
+			<column name="FK_SEMESTER_PLANNING" prior="SP_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to SEMESTER_PLANNING.SP_ID]]></comment>
+			</column>
+			<column name="O_PLANNED_HOURS" type="DECIMAL" length="5" decimal="2" mandatory="y" >
+				<comment><![CDATA[Real planned hours/week]]></comment>
+			</column>
+			<column name="O_TYPE" type="VARCHAR" length="10" >
+				<comment><![CDATA[Is it Vorlesung/Labor?]]></comment>
+			</column>
+			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
+				<column name="O_ID" />
+				<column name="FK_SUBJECT" />
+				<column name="FK_SEMESTER_PLANNING" />
+			</index>
+			<fk name="fk_offering_subject" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SUBJECT" pk="S_NR" />
+			</fk>
+			<fk name="fk_offering_semester_planning" to_schema="Planning_Tool" to_table="SEMESTER_PLANNING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SEMESTER_PLANNING" pk="SP_ID" />
+			</fk>
+		</table>
+		<table name="OFFERING_ASSIGNMENT" prior="OFFERING_ASSIGNM" >
+			<comment><![CDATA[The assignment of a lecturer to a specific course. It dissolves the N:M relationship between OFFERING and TEACHER (since a course can have multiple lecturers and a lecturer can teach multiple courses)]]></comment>
+			<column name="OA_ID" type="INT" mandatory="y" />
+			<column name="FK_OFFERING" prior="O_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[REFERS TO OFFERING.O_ID]]></comment>
+			</column>
+			<column name="FK_TEACHER" prior="T_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to TEACHER.T_ID]]></comment>
+			</column>
+			<column name="OA_ROLE" type="VARCHAR" length="10" >
+				<comment><![CDATA[role of the teacher (Haupdozent, Tutor)]]></comment>
+			</column>
+			<column name="OA_ASSIGNED_HOURS" type="DECIMAL" length="5" decimal="2" >
+				<comment><![CDATA[The hours specifically allocated to this instructor for this event.]]></comment>
+			</column>
+			<index name="pk_OFFERING_ASSIGNMENT" unique="PRIMARY_KEY" >
+				<column name="OA_ID" />
+				<column name="FK_OFFERING" />
+				<column name="FK_TEACHER" />
+			</index>
+			<fk name="fk_offering_assignment" to_schema="Planning_Tool" to_table="OFFERING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_OFFERING" pk="O_ID" />
+			</fk>
+			<fk name="fk_offering_assignment_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_TEACHER" pk="T_ID" />
 			</fk>
 		</table>
 		<table name="POSITION" prior="Entity" >
@@ -112,6 +192,96 @@ one position can be assigned to several professors by term.]]></comment>
 			</index>
 			<fk name="fk_professor_teacher" to_schema="Planning_Tool" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="P_ID" pk="T_ID" />
+			</fk>
+		</table>
+		<table name="PROGRAMM_SUBJECT_REQUIREMENT" prior="PROGRAMM_SUBJECT_REQUIREMEN" >
+			<comment><![CDATA[This association table resolves the N:M relationship between subject (SUBJECT) and study program (STUDY_PROGRAM) and stores the planning requirements data]]></comment>
+			<column name="PSR_ID" type="INT" mandatory="y" />
+			<column name="FK_STUDY_PROGRAM" prior="ST_NAME" type="VARCHAR" length="3" mandatory="y" />
+			<column name="FK_SUBJECT" prior="S_NR" type="INT" mandatory="y" />
+			<column name="FK_SEMESTER_PLANNING" prior="SP_ID" type="INT" mandatory="y" />
+			<column name="PSR_REQUIRED_HOURS" type="DECIMAL" length="5" decimal="2" >
+				<comment><![CDATA[hours/week after the STuPO]]></comment>
+			</column>
+			<column name="PSR_TARGET_SEMESTER" type="INT" mandatory="y" >
+				<comment><![CDATA[the semester, when the course should be done]]></comment>
+			</column>
+			<column name="PSR_ESTIMATED_NEEDS" type="VARCHAR" length="100" >
+				<comment><![CDATA[field for comments]]></comment>
+			</column>
+			<index name="pk_PROGRAMM_SUBJECT_REQUIREMENT" unique="PRIMARY_KEY" >
+				<column name="PSR_ID" />
+				<column name="FK_STUDY_PROGRAM" />
+				<column name="FK_SUBJECT" />
+				<column name="FK_SEMESTER_PLANNING" />
+			</index>
+			<fk name="fk_programm_subject_requirement" to_schema="Planning_Tool" to_table="STUDY_PROGRAM" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_STUDY_PROGRAM" pk="ST_NAME" />
+			</fk>
+			<fk name="fk_programm_subject_requirement1" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SUBJECT" pk="S_NR" />
+			</fk>
+			<fk name="fk_programm_subject_requirement2" to_schema="Planning_Tool" to_table="SEMESTER_PLANNING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SEMESTER_PLANNING" pk="SP_ID" />
+			</fk>
+		</table>
+		<table name="SEMESTER_PLANNING" prior="SEMESTER_PLANNIN" >
+			<comment><![CDATA[This entity introduces the temporal dimension and plan versioning.]]></comment>
+			<column name="SP_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[identity of the cyclus]]></comment>
+			</column>
+			<column name="SP_TERM" prior="SP_YEAR" type="VARCHAR" length="6" mandatory="y" >
+				<comment><![CDATA[year of the semester and term (SSyy or WSyyyy)]]></comment>
+			</column>
+			<column name="SP_VERSION_NR" type="INT" mandatory="y" >
+				<comment><![CDATA[version number of the planning]]></comment>
+			</column>
+			<column name="SP_IS_FINAL" type="BOOLEAN" mandatory="y" >
+				<comment><![CDATA[mark, if the planning is final or not final]]></comment>
+			</column>
+			<index name="pk_SEMESTER_PLANNING" unique="PRIMARY_KEY" >
+				<column name="SP_ID" />
+			</index>
+		</table>
+		<table name="SERVICE_REQUEST" prior="SERVICE_REQUES" >
+			<comment><![CDATA[Aligns teaching services provided to/received from other faculties]]></comment>
+			<column name="SR_ID" type="INT" mandatory="y" />
+			<column name="FK_SUBJECT" prior="S_NR" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to SUBJECT.S_NR]]></comment>
+			</column>
+			<column name="FK_SEMESTER_PLANNING" prior="SP_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to SEMESTER_PLANNING.SP_ID]]></comment>
+			</column>
+			<column name="SR_EXPORTING_FACULTY" prior="D_NAME" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to DEPARTMENT.D_NAME]]></comment>
+			</column>
+			<column name="SR_IMPORTING_FACULTY" prior="D_NAME" type="INT" mandatory="y" >
+				<comment><![CDATA[refers to DEPARTMENT.D_NAME]]></comment>
+			</column>
+			<column name="SR_WEEKLY_HOURS" type="DECIMAL" length="5" decimal="2" >
+				<comment><![CDATA[volume of the requested hours]]></comment>
+			</column>
+			<column name="SR_STATUS" type="VARCHAR" length="4" >
+				<comment><![CDATA[status for the request (open, done)]]></comment>
+			</column>
+			<index name="pk_SERVICE_REQUEST" unique="PRIMARY_KEY" >
+				<column name="SR_ID" />
+				<column name="FK_SUBJECT" />
+				<column name="FK_SEMESTER_PLANNING" />
+				<column name="SR_EXPORTING_FACULTY" />
+				<column name="SR_IMPORTING_FACULTY" />
+			</index>
+			<fk name="fk_service_request_subjects" to_schema="Planning_Tool" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SUBJECT" pk="S_NR" />
+			</fk>
+			<fk name="fk_service_request" to_schema="Planning_Tool" to_table="SEMESTER_PLANNING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="FK_SEMESTER_PLANNING" pk="SP_ID" />
+			</fk>
+			<fk name="fk_service_request_department" to_schema="Planning_Tool" to_table="DEPARTMENT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="SR_EXPORTING_FACULTY" pk="D_NAME" />
+			</fk>
+			<fk name="fk_service_request_department_import" to_schema="Planning_Tool" to_table="DEPARTMENT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="SR_IMPORTING_FACULTY" pk="D_NAME" />
 			</fk>
 		</table>
 		<table name="STUDY_PROGRAM" prior="STU_PROGRAM" >
@@ -172,13 +342,54 @@ one position can be assigned to several professors by term.]]></comment>
 	</schema>
 	<layout name="PlanningTool" id="a5e67e50-6a13-4a45-809c-ccd7e83f3a73" show_relation="columns" >
 		<entity schema="Planning_Tool" name="COURSE" color="C1D8EE" x="95" y="57" />
-		<entity schema="Planning_Tool" name="STUDY_PROGRAM" color="C1D8EE" x="95" y="684" />
 		<entity schema="Planning_Tool" name="SUBJECT" color="3986C1" x="57" y="418" />
-		<entity schema="Planning_Tool" name="DEPARTMENT" color="C1D8EE" x="513" y="57" />
-		<entity schema="Planning_Tool" name="TEACHER" color="C1D8EE" x="475" y="228" />
-		<entity schema="Planning_Tool" name="LECTURER" color="C1D8EE" x="836" y="228" />
-		<entity schema="Planning_Tool" name="PROFESSOR" color="C1D8EE" x="418" y="646" />
-		<entity schema="Planning_Tool" name="POSiTION_PROFESSOR" color="C1D8EE" x="855" y="627" />
-		<entity schema="Planning_Tool" name="POSITION" color="C1D8EE" x="1254" y="627" />
+		<entity schema="Planning_Tool" name="LECTURER" color="C1D8EE" x="1159" y="95" />
+		<entity schema="Planning_Tool" name="TEACHER" color="C1D8EE" x="722" y="76" />
+		<entity schema="Planning_Tool" name="SERVICE_REQUEST" color="3986C1" x="380" y="399" />
+		<entity schema="Planning_Tool" name="DEPARTMENT" color="C1D8EE" x="475" y="133" />
+		<entity schema="Planning_Tool" name="SEMESTER_PLANNING" color="3986C1" x="722" y="874" />
+		<entity schema="Planning_Tool" name="PROGRAMM_SUBJECT_REQUIREMENT" color="3986C1" x="342" y="855" />
+		<entity schema="Planning_Tool" name="STUDY_PROGRAM" color="C1D8EE" x="76" y="836" />
+		<entity schema="Planning_Tool" name="PROFESSOR" color="C1D8EE" x="1026" y="399" />
+		<entity schema="Planning_Tool" name="POSITION" color="C1D8EE" x="1501" y="646" />
+		<entity schema="Planning_Tool" name="POSiTION_PROFESSOR" color="C1D8EE" x="1102" y="646" />
+		<entity schema="Planning_Tool" name="OFFERING" color="3986C1" x="684" y="627" />
+		<entity schema="Planning_Tool" name="OFFERING_ASSIGNMENT" color="3986C1" x="665" y="399" />
+		<entity schema="Planning_Tool" name="DEPUTAT_ACCOUNT" color="3986C1" x="1007" y="855" />
+	</layout>
+	<layout name="uv1" id="3c009408-d4f4-4cfa-84af-beee96138312" show_relation="columns" >
+		<entity schema="Planning_Tool" name="SEMESTER_PLANNING" color="C1D8EE" x="95" y="57" />
+		<entity schema="Planning_Tool" name="PROGRAMM_SUBJECT_REQUIREMENT" color="C1D8EE" x="627" y="171" />
+		<entity schema="Planning_Tool" name="STUDY_PROGRAM" color="3986C1" x="893" y="513" />
+		<entity schema="Planning_Tool" name="SUBJECT" color="3986C1" x="380" y="418" />
+		<entity schema="Planning_Tool" name="DEPARTMENT" color="3986C1" x="152" y="722" />
+		<entity schema="Planning_Tool" name="SERVICE_REQUEST" color="3986C1" x="57" y="399" />
+	</layout>
+	<layout name="uv2" id="6109144d-5011-4d12-a705-1e617cd979dc" show_relation="columns" >
+		<comment><![CDATA[UV2 – Create course offering
+Actor: deputy planer
+Goal: Assign professors and lectures to the determined subjects
+Description: Subjects are matched with teaching staff based on availability and capacity. Cross-faculty coordination ensures correct assignment when subjects are shared]]></comment>
+		<entity schema="Planning_Tool" name="SEMESTER_PLANNING" color="3986C1" x="57" y="57" />
+		<entity schema="Planning_Tool" name="SUBJECT" color="3986C1" x="76" y="380" />
+		<entity schema="Planning_Tool" name="OFFERING" color="C1D8EE" x="570" y="133" />
+		<entity schema="Planning_Tool" name="TEACHER" color="3986C1" x="1026" y="190" />
+		<entity schema="Planning_Tool" name="OFFERING_ASSIGNMENT" color="C1D8EE" x="931" y="475" />
+	</layout>
+	<layout name="uv3" id="48ce824e-633f-476f-a13f-67c7581e3d60" show_relation="columns" >
+		<entity schema="Planning_Tool" name="TEACHER" color="3986C1" x="836" y="361" />
+		<entity schema="Planning_Tool" name="DEPARTMENT" color="3986C1" x="228" y="114" />
+		<entity schema="Planning_Tool" name="OFFERING" color="3986C1" x="418" y="57" />
+		<entity schema="Planning_Tool" name="OFFERING_ASSIGNMENT" color="3986C1" x="836" y="95" />
+		<entity schema="Planning_Tool" name="SERVICE_REQUEST" color="3986C1" x="57" y="323" />
+	</layout>
+	<layout name="uv4" id="8ba74451-ef73-4cbc-a834-ac25337ff394" show_relation="columns" >
+		<comment><![CDATA[UV4 – Manage teaching discounts
+Actor: deputy planer, president, dean
+Goal: Register and approve teaching load reductions ( functions like dean, lab head,…)
+Description: Professors can receive  discount values based on official duties. These must be defined, approved, and communicated to HR and Finance]]></comment>
+		<entity schema="Planning_Tool" name="SEMESTER_PLANNING" color="3986C1" x="228" y="361" />
+		<entity schema="Planning_Tool" name="TEACHER" color="3986C1" x="608" y="152" />
+		<entity schema="Planning_Tool" name="DEPUTAT_ACCOUNT" color="C1D8EE" x="57" y="57" />
 	</layout>
 </project>
