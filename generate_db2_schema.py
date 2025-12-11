@@ -117,12 +117,14 @@ def generate_sql():
         lines.append(f"CREATE TABLE {schema_name}.{t['name']} (")
         # Columns
         for i, csql in enumerate(t['columns_sql']):
-            sep = ',' if (i < len(t['columns_sql']) - 1 or t['pk_cols']) else ''
+            sep = ',' if i < len(t['columns_sql']) - 1 else ''
             lines.append(f"  {csql}{sep}")
-        # Primary key
+        # Primary key (add comma if there are any columns already)
         if t['pk_cols']:
-            pk_list = ', '.join(t['pk_cols'])
-            lines.append(f"  , PRIMARY KEY ({pk_list})")
+            if t['columns_sql']:
+                lines.append(f"  , PRIMARY KEY ({', '.join(t['pk_cols'])})")
+            else:
+                lines.append(f"  PRIMARY KEY ({', '.join(t['pk_cols'])})")
         lines.append(")")
         lines.append(";")
         lines.append("")
@@ -131,7 +133,9 @@ def generate_sql():
     for fk in fks:
         lc = ', '.join(fk['local_cols'])
         rc = ', '.join(fk['ref_cols'])
-        lines.append(f"ALTER TABLE {schema_name}.{fk['table']} ADD CONSTRAINT {fk['name']} FOREIGN KEY ({lc}) REFERENCES {fk['ref_schema']}.{fk['ref_table']} ({rc});")
+        # Sanitize constraint names (DB2: no hyphens)
+        cname = ''.join(ch if ch.isalnum() or ch == '_' else '_' for ch in fk['name'])
+        lines.append(f"ALTER TABLE {schema_name}.{fk['table']} ADD CONSTRAINT {cname} FOREIGN KEY ({lc}) REFERENCES {fk['ref_schema']}.{fk['ref_table']} ({rc});")
 
     OUTPUT_SQL.write_text('\n'.join(lines), encoding='utf-8')
     return OUTPUT_SQL
