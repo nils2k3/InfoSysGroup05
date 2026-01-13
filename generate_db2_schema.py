@@ -6,7 +6,7 @@ Outputs db2_schema.sql in the workspace root.
 import xml.etree.ElementTree as ET
 from pathlib import Path
 
-SCHEMA_XML = Path('dbschema/schema.dbs')
+SCHEMA_XML = Path('dbschema/normalizedschema.dbs')
 OUTPUT_SQL = Path('db2_schema.sql')
 
 

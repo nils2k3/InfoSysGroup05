@@ -11,6 +11,9 @@ import csv
 from pathlib import Path
 from typing import List, Dict, Any
 
+# Add extractors to path before importing extractor modules
+sys.path.insert(0, str(Path(__file__).parent / 'extractors'))
+
 from extractors.position_semester import PositionSemesterExtractor
 from extractors.position_assignment import PositionAssignmentExtractor
 from extractors.professor import ProfessorExtractor
@@ -25,9 +28,6 @@ from extractors.subject import SubjectExtractor
 from extractors.study_program import StudyProgramExtractor
 from extractors.offering import OfferingExtractor
 from extractors.offering_assignment import OfferingAssignmentExtractor
-
-# Add extractors to path
-sys.path.insert(0, str(Path(__file__).parent / 'extractors'))
 
 import pandas as pd
 
