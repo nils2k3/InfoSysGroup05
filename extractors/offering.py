@@ -52,7 +52,7 @@ class OfferingExtractor(DataExtractor):
             return []
         
         # Create lookups
-        subject_lookup = {s['S_NR']: s for s in subject}
+        subject_lookup = {s['S_ID']: s for s in subject}
         semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
         
         # Get unique subject-term combinations
@@ -78,10 +78,9 @@ class OfferingExtractor(DataExtractor):
             
             record = {
                 'O_ID': id_counter,
-                'FK_SUBJECT': subj['S_NR'],
-                'FK_SEMESTER_PLANNING': sem_id,
+                'FK_S_ID': subj['S_ID'],
+                'FK_SP_ID': sem_id,
                 'O_PLANNED_HOURS': float(row['numSchd']),
-                'O_TYPE': None
             }
             records.append(record)
             id_counter += 1

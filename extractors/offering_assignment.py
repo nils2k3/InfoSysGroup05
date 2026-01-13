@@ -54,7 +54,7 @@ class OfferingAssignmentExtractor(DataExtractor):
         # Create offering lookup by subject+term
         offering_by_subj_term = {}
         for o in offering:
-            key = (o['FK_SUBJECT'], o['FK_SEMESTER_PLANNING'])
+            key = (o['FK_S_ID'], o['FK_SP_ID'])
             offering_by_subj_term[key] = o
         
         # Create semester lookup
@@ -93,10 +93,11 @@ class OfferingAssignmentExtractor(DataExtractor):
             
             record = {
                 'OA_ID': id_counter,
-                'FK_OFFERING': offering_rec['O_ID'],
-                'FK_TEACHER': teacher_id,
-                'OA_ROLE': None,
-                'OA_ASSIGNED_HOURS': float(hours)
+                'FK_O_ID': offering_rec['O_ID'],
+                'FK_T_ID': teacher_id,
+                'OA_ASSIGNED_HOURS': float(hours),
+                'OA_ROLE': None
+
             }
             records.append(record)
             id_counter += 1
