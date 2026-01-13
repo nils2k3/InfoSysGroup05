@@ -65,11 +65,11 @@ class ProfessorExtractor(DataExtractor):
             df_oc['lecName_str'] = df_oc['lecName'].astype(str).str.strip()
             df_oc['lecRoom_str'] = df_oc['lecRoom'].astype(str).str.strip()
             
-            # Filter: nur Professoren mit gültigen Rauminformationen
+            # Filter: nur Professoren mit isprof == 'WAHR'
             professors_courses = df_oc[
                 (df_oc['isprof'] == 'WAHR') & 
-                (df_oc['lecRoom_str'] != 'nan') & 
-                (df_oc['lecRoom_str'].str.len() > 0)
+                (df_oc['lecRoom_str'] != '') & 
+                (df_oc['lecRoom_str'] != 'nan')
             ]
             
             # Erstelle das Lookup mit NACHNAMEN als Schlüssel (lecName = Nachname in CSV)
@@ -87,7 +87,6 @@ class ProfessorExtractor(DataExtractor):
                 
                 record = {
                     'P_ID': teacher_id,
-                    'P_CREDIT_HOUR_ACCOUNT': 0,  # Initialwert (wird später aus DEPUTAT_ACCOUNT berechnet)
                     'P_ROOM': room
                 }
                 records.append(record)

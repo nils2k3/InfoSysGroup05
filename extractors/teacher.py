@@ -56,9 +56,10 @@ class TeacherExtractor(DataExtractor):
                 'T_ID': int(row['lecNo']),
                 'T_NAME': str(row['lec1stn']) if not pd.isna(row['lec1stn']) else None,
                 'T_LASTNAME': str(row['lecName']) if not pd.isna(row['lecName']) else None,
-                'T_DEPARTMENT': str(row['lecDept']) if not pd.isna(row['lecDept']) else None,
+                'FK_D_NAME': str(row['lecDept']) if not pd.isna(row['lecDept']) else None,
+                'FK_ZIP': None,  # No ZIP info available in the provided CSVs
                 'T_NOTES': str(row['lecNotes']) if not pd.isna(row['lecNotes']) else None,
-                'T_ISPROFESSOR': row['isprof'] == 'WAHR'
+                'T_IS_ACTIVE': True  # Assuming all extracted teachers are active
                 # Add more columns as needed
             }
             teachers.append(teacher)
