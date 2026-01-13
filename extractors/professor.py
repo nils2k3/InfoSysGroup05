@@ -36,14 +36,14 @@ class ProfessorExtractor(DataExtractor):
         Extract data for PROFESSOR table by filtering TEACHER records and enriching with room data.
         
         PROFESSOR is a subtype of TEACHER. This extractor:
-        1. Filters the TEACHER list to only professors (T_ISPROFESSOR = True)
+        1. Filters the TEACHER list to only professors (based on OfferedCourses.isprof)
         2. Looks up office room (P_ROOM) from OfferedCourses using LASTNAME (lecName) matching
         
         Args:
         CSV Data:
             OfferedCourses: DataFrame loaded from OfferedCourses.csv (for P_ROOM lookup via lecName)
         Dependencies:
-            teacher: List of TEACHER table records (filtered by T_ISPROFESSOR flag)
+            teacher: List of TEACHER table records (filtered by professor IDs)
         Additional:
             **kwargs: Additional parameters passed by the extraction system
         
@@ -55,6 +55,21 @@ class ProfessorExtractor(DataExtractor):
             return []
         
         records = []
+
+        # 0. Build professor ID set from OfferedCourses (lecNo where isprof == 'WAHR')
+        professor_ids = set()
+        if OfferedCourses is not None and len(OfferedCourses) > 0:
+            df_ids = OfferedCourses[['lecNo', 'isprof']].copy()
+            df_ids = df_ids.dropna(subset=['lecNo'])
+            prof_rows = df_ids[df_ids['isprof'] == 'WAHR']
+            for _, row in prof_rows.iterrows():
+                try:
+                    professor_ids.add(int(row['lecNo']))
+                except (TypeError, ValueError):
+                    continue
+        if not professor_ids:
+            logger.warning("No professor IDs found in OfferedCourses (isprof == 'WAHR').")
+            return []
         
         # 1. Build lookup from OfferedCourses: Last Name (lecName) -> Room (lecRoom)
         room_lookup = {}
@@ -76,20 +91,21 @@ class ProfessorExtractor(DataExtractor):
             for _, row in professors_courses.drop_duplicates(subset=['lecName_str']).iterrows():
                 room_lookup[row['lecName_str']] = row['lecRoom_str']
         
-        # 2. Filter TEACHER list: only extract professors (T_ISPROFESSOR = True)
+        # 2. Filter TEACHER list: only extract professors (by ID from OfferedCourses)
         for teacher_record in teacher:
-            if teacher_record.get('T_ISPROFESSOR') == True and teacher_record.get('T_LASTNAME'):
-                teacher_id = teacher_record.get('T_ID')
-                teacher_lastname = teacher_record.get('T_LASTNAME')
-                
-                # Lookup mit NACHNAMEN (T_LASTNAME) in der NACHNAMEN-Map (lecName)
-                room = room_lookup.get(teacher_lastname, 'N/A')
-                
-                record = {
-                    'P_ID': teacher_id,
-                    'P_ROOM': room
-                }
-                records.append(record)
+            teacher_id = teacher_record.get('T_ID')
+            teacher_lastname = teacher_record.get('T_LASTNAME')
+            if teacher_id not in professor_ids or not teacher_lastname:
+                continue
+
+            # Lookup mit NACHNAMEN (T_LASTNAME) in der NACHNAMEN-Map (lecName)
+            room = room_lookup.get(teacher_lastname, 'N/A')
+
+            record = {
+                'P_ID': teacher_id,
+                'P_ROOM': room
+            }
+            records.append(record)
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} professor records")
         return records
