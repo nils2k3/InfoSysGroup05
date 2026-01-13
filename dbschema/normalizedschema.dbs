@@ -132,6 +132,9 @@
 			<column name="S_ID" type="INT" mandatory="y" />
 			<column name="S_NAME" type="VARCHAR" length="255" mandatory="y" />
 			<column name="S_STUPO_HOURS" type="DECIMAL" length="4" decimal="2" />
+			<column name="S_SEMESTER" type="INT" mandatory="y" >
+				<comment><![CDATA[Valid values: 1-7]]></comment>
+			</column>
 			<column name="FK_ST_NAME" prior="FK_STUDY_PROGRAM" type="VARCHAR" length="100" />
 			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
 				<column name="S_ID" />
