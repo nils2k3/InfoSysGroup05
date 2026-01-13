@@ -47,8 +47,6 @@ class LecturerExtractor(DataExtractor):
             lecturer = {
                 'T_ID': int(row['lecNo']),  # References TEACHER.T_ID
                 'L_STREET_ADDRESS': None,  # Default null as in original
-                'L_CITY': None,           # Default null as in original
-                'L_ZIP': None,            # Default null as in original
                 'L_SUPERVISOR': supervisor # Foreign key to TEACHER.T_ID
             }
             lecturers.append(lecturer)
