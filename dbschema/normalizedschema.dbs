@@ -19,25 +19,6 @@
 			<fk name="fk_DEPARTMENT_SERVICE_PROVIDE_0" to_schema="public" to_table="SERVICE_REQUEST" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="D_NAME" pk="FK_PROVIDING_D_NAME" />
 			</fk>
-		</table>
-		<table name="DEPARTMENT_0" >
-			<column name="D_NAME" type="VARCHAR" length="100" mandatory="y" />
-			<index name="pk_DEPARTMENT_0" unique="PRIMARY_KEY" >
-				<column name="D_NAME" />
-			</index>
-			<fk name="fk_DEPARTMENT_TEACHER_0" to_schema="public" to_table="TEACHER" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="D_NAME" pk="FK_D_NAME" />
-			</fk>
-			<fk name="fk_DEPARTMENT_STUDY_PROGRAM_0" to_schema="public" to_table="STUDY_PROGRAM" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="D_NAME" pk="FK_D_NAME" />
-			</fk>
-			<fk name="fk_DEPARTMENT_SERVICE_REQUEST_0" to_schema="public" to_table="SERVICE_REQUEST" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="D_NAME" pk="FK_REQUESTING_D_NAME" />
-			</fk>
-			<fk name="fk_DEPARTMENT_SERVICE_PROVIDE_1" to_schema="public" to_table="SERVICE_REQUEST" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="D_NAME" pk="FK_PROVIDING_D_NAME" />
-			</fk>
-		</table>
 		<table name="DEPUTAT_ACCOUNT" spec="" >
 			<column name="ACC_ID" type="INT" mandatory="y" />
 			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" />

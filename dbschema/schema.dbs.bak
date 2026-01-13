@@ -158,7 +158,7 @@ LECTURER is a subtype of TEACHER.]]></comment>
 				<column name="PO_ID" />
 			</index>
 		</table>
-		<table name="POSiTION_PROFESSOR" prior="POSTION_PROFESSOR" >
+		<table name="POSITION_PROFESSOR" prior="POSTION_PROFESSOR" >
 			<comment><![CDATA[A professor can have several positions on several terms.
 one position can be assigned to several professors by term.]]></comment>
 			<column name="P_ID" type="INT" mandatory="y" />
@@ -336,7 +336,7 @@ one position can be assigned to several professors by term.]]></comment>
 				<fk_column name="T_DEPARTMENT" pk="D_NAME" />
 			</fk>
 		</table>
-		<view name="DEPUTAT_ACCOUNT" >
+		<view name="DEPUTAT_ACCOUNT_VIEW" >
 			<view_script><![CDATA[CREATE VIEW ${nameWithSchemaName} AS ...]]></view_script>
 		</view>
 	</schema>
