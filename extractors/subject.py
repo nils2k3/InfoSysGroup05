@@ -46,7 +46,7 @@ class SubjectExtractor(DataExtractor):
             
         # Get relevant columns and remove duplicates
         subjectsDF = OfferedCourses[[
-            'sbjNo', 'sbjName', 'sbjlevel', 'sbjNotes', 'elective', 'studyPrg', 'numCurr', 'numSchd'
+            'sbjNo', 'sbjName', 'sbjlevel', 'sbjNotes', 'elective', 'studyPrg', 'numCurr'
         ]].drop_duplicates()
         
         def safe_numeric(value):
@@ -66,18 +66,17 @@ class SubjectExtractor(DataExtractor):
                 continue
             
             subject = {
-                'S_NR': str(row['sbjNo']),  # Primary key (not auto-increment)
-                'S_STUDY_PROGRAM': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
+                'S_ID': str(row['sbjNo']),  # Primary key (not auto-increment)
                 'S_NAME': str(row['sbjName']) if not pd.isna(row['sbjName']) else None,
-                'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
                 'S_STUPO_HOURS': safe_numeric(row['numCurr']),
-                'S_SCHEDULE_HOURS': safe_numeric(row['numSchd']),
-                'S_COMMENT': str(row['sbjNotes']) if not pd.isna(row['sbjNotes']) else None,
-                'S_TYPE': str(row['elective']) if not pd.isna(row['elective']) else None,
+                'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
+                'FK_ST_NAME': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
+                'S_NOTES': str(row['sbjNotes']) if not pd.isna(row['sbjNotes']) else None,
+                'S_IS_ELECTIVE': str(row['elective']) if not pd.isna(row['elective']) else None,
             }
             subjects.append(subject)
         
         # Sort by subject number (same as original)
-        subjects = sorted(subjects, key=lambda x: x['S_NR'] or '')
+        subjects = sorted(subjects, key=lambda x: x['S_ID'] or '')
         
         return subjects

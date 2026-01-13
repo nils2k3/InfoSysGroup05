@@ -52,7 +52,7 @@ class ServiceRequestExtractor(DataExtractor):
             logger.warning("Missing dependencies")
             return []
         
-        subject_lookup = {s['S_NR']: s for s in subject}
+        subject_lookup = {s['S_ID']: s for s in subject}
         semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
         dept_names = {d['D_NAME'] for d in department}
         
@@ -80,12 +80,12 @@ class ServiceRequestExtractor(DataExtractor):
             
             record = {
                 'SR_ID': id_counter,
-                'FK_SUBJECT': sbj_no,
-                'FK_SEMESTER_PLANNING': semester_lookup[term],
-                'SR_EXPORTING_FACULTY': provider,
-                'SR_IMPORTING_FACULTY': client,
-                'SR_WEEKLY_HOURS': float(hours),
-                'SR_STATUS': 'open'
+                'FK_S_ID': sbj_no,
+                'FK_REQUESTING_D_NAME': client,
+                'SR_PROVIDING_D_NAME': provider,
+                'SR_HOURS': float(hours),
+                'SR_STATUS': 'APPROVED',
+                'FK_SEMESTER_PLANNING': semester_lookup[term]
             }
             records.append(record)
             id_counter += 1

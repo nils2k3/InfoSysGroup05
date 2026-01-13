@@ -71,7 +71,7 @@ class StudyProgramExtractor(DataExtractor):
                 most_common_dept = department_counts.index[0]
                 studyPrograms.append({
                     'ST_NAME': str(name),
-                    'ST_DEPARTMENT': str(most_common_dept)
+                    'FK_D_NAME': str(most_common_dept)
                 })
         
         return studyPrograms
