@@ -67,9 +67,6 @@
 				<defo><![CDATA[1]]></defo>
 				<comment><![CDATA[Really planned hours. Can change per Semester]]></comment>
 			</column>
-			<column name="O_TYPE" type="VARCHAR" length="20" >
-				<comment><![CDATA[Type of course: Lecture (V), Exercise (U), or Seminar (S).]]></comment>
-			</column>
 			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
 				<column name="O_ID" />
 			</index>
@@ -320,7 +317,7 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="646" y="152" />
 		<entity schema="public" name="POSITION_SEMESTER" color="3986C1" x="247" y="931" />
 		<entity schema="public" name="POSITION" color="3986C1" x="741" y="1007" />
-		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
 		<entity schema="public" name="OFFERING" color="3986C1" x="380" y="57" />
+		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
 	</layout>
 </project>
