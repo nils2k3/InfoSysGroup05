@@ -19,6 +19,7 @@
 			<fk name="fk_DEPARTMENT_SERVICE_PROVIDE_0" to_schema="public" to_table="SERVICE_REQUEST" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="D_NAME" pk="FK_PROVIDING_D_NAME" />
 			</fk>
+		</table>
 		<table name="DEPUTAT_ACCOUNT" spec="" >
 			<column name="ACC_ID" type="INT" mandatory="y" />
 			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" />
@@ -27,12 +28,6 @@
 			<column name="ACC_CARRYOVER" type="DECIMAL" length="4" decimal="2" />
 			<index name="pk_DEPUTAT_ACCOUNT" unique="PRIMARY_KEY" >
 				<column name="ACC_ID" />
-			</index>
-			<index name="unq_FK_TEACHER" unique="UNIQUE_INDEX" >
-				<column name="FK_T_ID" />
-			</index>
-			<index name="unq_FK_SEMESTER_PLANNING" unique="UNIQUE_INDEX" >
-				<column name="FK_SP_ID" />
 			</index>
 		</table>
 		<table name="LECTURER" spec="" >
@@ -53,12 +48,6 @@
 			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
 				<column name="O_ID" />
 			</index>
-			<index name="unq_FK_SUBJECT" unique="UNIQUE_INDEX" >
-				<column name="FK_S_ID" />
-			</index>
-			<index name="unq_FK_SEMESTER_PLANNING" unique="UNIQUE_INDEX" >
-				<column name="FK_SP_ID" />
-			</index>
 			<fk name="fk_OFFERING_OFFERING_ASSIGNMENT" to_schema="public" to_table="OFFERING_ASSIGNMENT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="O_ID" pk="FK_O_ID" />
 			</fk>
@@ -71,12 +60,6 @@
 			<column name="OA_ROLE" type="VARCHAR" length="50" />
 			<index name="pk_OFFERING_ASSIGNMENT" unique="PRIMARY_KEY" >
 				<column name="OA_ID" />
-			</index>
-			<index name="unq_FK_OFFERING" unique="UNIQUE_INDEX" >
-				<column name="FK_O_ID" />
-			</index>
-			<index name="unq_FK_TEACHER" unique="UNIQUE_INDEX" >
-				<column name="FK_T_ID" />
 			</index>
 		</table>
 		<table name="POSTAL_CODE" spec="" >
@@ -113,6 +96,12 @@
 			<fk name="fk_SEMESTER_PLANNING_DEPUTAT_ACCOUNT" to_schema="public" to_table="DEPUTAT_ACCOUNT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="SP_ID" pk="FK_SP_ID" />
 			</fk>
+			<fk name="fk_SEMESTER_PLANNING_SERVICE_REQUEST" to_schema="public" to_table="SERVICE_REQUEST" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="SP_ID" pk="FK_SEMESTER" />
+			</fk>
+			<fk name="fk_SEMESTER_PLANNING_TEACHING_REDUCTION" to_schema="public" to_table="TEACHING_REDUCTION" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="SP_ID" pk="FK_SEMESTER" />
+			</fk>
 		</table>
 		<table name="SERVICE_REQUEST" spec="" >
 			<column name="SR_ID" type="INT" mandatory="y" />
@@ -128,24 +117,12 @@
 			<index name="pk_SERVICE_REQUEST" unique="PRIMARY_KEY" >
 				<column name="SR_ID" />
 			</index>
-			<index name="unq_FK_SUBJECT" unique="UNIQUE_INDEX" >
-				<column name="FK_S_ID" />
-			</index>
-			<index name="unq_FK_REQUESTING_DEPT" unique="UNIQUE_INDEX" >
-				<column name="FK_REQUESTING_D_NAME" />
-			</index>
-			<index name="unq_FK_PROVIDING_DEPT" unique="UNIQUE_INDEX" >
-				<column name="FK_PROVIDING_D_NAME" />
-			</index>
 		</table>
 		<table name="STUDY_PROGRAM" spec="" >
 			<column name="ST_NAME" type="VARCHAR" length="100" mandatory="y" />
 			<column name="FK_D_NAME" prior="FK_DEPARTMENT" type="VARCHAR" length="100" />
 			<index name="pk_STUDY_PROGRAM" unique="PRIMARY_KEY" >
 				<column name="ST_NAME" />
-			</index>
-			<index name="unq_FK_DEPARTMENT" unique="UNIQUE_INDEX" >
-				<column name="FK_D_NAME" />
 			</index>
 			<fk name="fk_STUDY_PROGRAM_SUBJECT" to_schema="public" to_table="SUBJECT" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="ST_NAME" pk="FK_ST_NAME" />
@@ -158,9 +135,6 @@
 			<column name="FK_ST_NAME" prior="FK_STUDY_PROGRAM" type="VARCHAR" length="100" />
 			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
 				<column name="S_ID" />
-			</index>
-			<index name="unq_FK_STUDY_PROGRAM" unique="UNIQUE_INDEX" >
-				<column name="FK_ST_NAME" />
 			</index>
 			<fk name="fk_SUBJECT_OFFERING" to_schema="public" to_table="OFFERING" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="S_ID" pk="FK_S_ID" />
@@ -178,12 +152,6 @@
 			<column name="T_NOTES" type="TEXT" />
 			<index name="pk_TEACHER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
-			</index>
-			<index name="unq_FK_DEPARTMENT" unique="UNIQUE_INDEX" >
-				<column name="FK_D_NAME" />
-			</index>
-			<index name="unq_FK_ZIP" unique="UNIQUE_INDEX" >
-				<column name="FK_ZIP" />
 			</index>
 			<fk name="fk_TEACHER_PROFESSOR" to_schema="public" to_table="PROFESSOR" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="T_ID" pk="T_ID" />
@@ -210,9 +178,6 @@
 			<index name="pk_TEACHING_REDUCTION" unique="PRIMARY_KEY" >
 				<column name="R_ID" />
 			</index>
-			<index name="unq_FK_TEACHER" unique="UNIQUE_INDEX" >
-				<column name="FK_T_ID" />
-			</index>
 		</table>
 	</schema>
 	<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
@@ -228,7 +193,6 @@
 		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1330" y="665" />
 		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
 		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
-		<entity schema="public" name="DEPARTMENT_0" color="3986C1" x="1026" y="570" />
 		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
 	</layout>
 </project>
