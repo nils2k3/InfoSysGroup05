@@ -11,9 +11,9 @@ Modify the extract() method to implement your specific business logic.
 """
 
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
-
 
 class SubjectExtractor(DataExtractor):
     """Extract data for SUBJECT table"""
@@ -72,7 +72,7 @@ class SubjectExtractor(DataExtractor):
                 'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
                 'FK_ST_NAME': str(row['studyPrg']) if not pd.isna(row['studyPrg']) else None,
                 'S_NOTES': str(row['sbjNotes']) if not pd.isna(row['sbjNotes']) else None,
-                'S_IS_ELECTIVE': str(row['elective']) if not pd.isna(row['elective']) else None,
+                'S_TYPE': str(row['elective']) if not pd.isna(row['elective']) else logging.warning(f"Missing elective type for subject {row['sbjNo']}") or 'P',
             }
             subjects.append(subject)
         
