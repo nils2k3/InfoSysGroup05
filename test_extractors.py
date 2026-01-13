@@ -8,6 +8,7 @@ Testet alle Extractors und zeigt die extrahierten Datensätze an.
 import pandas as pd
 import sys
 import logging
+import csv
 from pathlib import Path
 
 # Add extractors directory to path
@@ -39,12 +40,14 @@ def load_csv_data():
     
     # Read with more flexible parameters to handle malformed CSV
     try:
-        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='utf-8', 
-                                      on_bad_lines='skip', engine='python')
+        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='utf-8',
+                                      on_bad_lines='skip', engine='python',
+                                      quoting=csv.QUOTE_NONE)
     except Exception as e:
         logger.warning(f"First attempt failed, trying with latin-1 encoding: {e}")
-        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='latin-1', 
-                                      on_bad_lines='skip', engine='python')
+        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='latin-1',
+                                      on_bad_lines='skip', engine='python',
+                                      quoting=csv.QUOTE_NONE)
     
     try:
         WorkLoad = pd.read_csv('data/workload.csv', sep=';', encoding='utf-8',

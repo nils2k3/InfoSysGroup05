@@ -7,6 +7,7 @@ Lädt Daten aus CSV-Dateien über Extractors und importiert sie in DB2.
 
 import sys
 import logging
+import csv
 from pathlib import Path
 from typing import List, Dict, Any
 
@@ -40,11 +41,13 @@ def load_csv_data():
     logger.info("Loading CSV files...")
     
     try:
-        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='utf-8', 
-                                      on_bad_lines='skip', engine='python')
+        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='utf-8',
+                                      on_bad_lines='skip', engine='python',
+                                      quoting=csv.QUOTE_NONE)
     except:
-        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='latin-1', 
-                                      on_bad_lines='skip', engine='python')
+        OfferedCourses = pd.read_csv('data/offeredCourses.csv', sep=';', encoding='latin-1',
+                                      on_bad_lines='skip', engine='python',
+                                      quoting=csv.QUOTE_NONE)
     
     try:
         WorkLoad = pd.read_csv('data/workload.csv', sep=';', encoding='utf-8',
