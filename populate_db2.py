@@ -10,17 +10,15 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any
 
+from extractors.position_semester import PositionSemesterExtractor
 from extractors.professor import ProfessorExtractor
 from extractors.lecturer import LecturerExtractor
 from extractors.department import DepartmentExtractor
 from extractors.position import PositionExtractor
 from extractors.semester_planning import SemesterPlanningExtractor
 from extractors.teacher import TeacherExtractor
-from extractors.course import CourseExtractor
-from extractors.position_professor import PositionProfessorExtractor
 from extractors.deputat_account import DeputatAccountExtractor
 from extractors.service_request import ServiceRequestExtractor
-from extractors.programm_subject_requirement import ProgrammSubjectRequirementExtractor
 from extractors.subject import SubjectExtractor
 from extractors.study_program import StudyProgramExtractor
 from extractors.offering import OfferingExtractor
@@ -180,23 +178,6 @@ def extract_all_data(OfferedCourses, WorkLoad):
                                                    semester_planning=results['SEMESTER_PLANNING'])
     logger.info(f"✓ OFFERING_ASSIGNMENT: {len(results['OFFERING_ASSIGNMENT'])} records")
     
-    # COURSE
-    course_ext = CourseExtractor()
-    results['COURSE'] = course_ext.extract(OfferedCourses,
-                                          offering=results['OFFERING'],
-                                          teacher=results['TEACHER'],
-                                          subject=results['SUBJECT'])
-    logger.info(f"✓ COURSE: {len(results['COURSE'])} records")
-    
-    # POSITION_PROFESSOR
-    pp_ext = PositionProfessorExtractor()
-    results['POSITION_PROFESSOR'] = pp_ext.extract(WorkLoad,
-                                                  professor=results['PROFESSOR'],
-                                                  position=results['POSITION'],
-                                                  semester_planning=results['SEMESTER_PLANNING'],
-                                                  teacher=results['TEACHER'])
-    logger.info(f"✓ POSITION_PROFESSOR: {len(results['POSITION_PROFESSOR'])} records")
-    
     # DEPUTAT_ACCOUNT
     da_ext = DeputatAccountExtractor()
     results['DEPUTAT_ACCOUNT'] = da_ext.extract(teacher=results['TEACHER'],
@@ -210,21 +191,21 @@ def extract_all_data(OfferedCourses, WorkLoad):
                                                semester_planning=results['SEMESTER_PLANNING'],
                                                department=results['DEPARTMENT'])
     logger.info(f"✓ SERVICE_REQUEST: {len(results['SERVICE_REQUEST'])} records")
-    
-    # PROGRAMM_SUBJECT_REQUIREMENT
-    psr_ext = ProgrammSubjectRequirementExtractor()
-    results['PROGRAMM_SUBJECT_REQUIREMENT'] = psr_ext.extract(OfferedCourses,
-                                                             study_program=results['STUDY_PROGRAM'],
-                                                             subject=results['SUBJECT'],
-                                                             semester_planning=results['SEMESTER_PLANNING'])
-    logger.info(f"✓ PROGRAMM_SUBJECT_REQUIREMENT: {len(results['PROGRAMM_SUBJECT_REQUIREMENT'])} records")
+
+    # POSITION_SEMESTER
+    ps_ext = PositionSemesterExtractor()
+    results['POSITION_SEMESTER'] = ps_ext.extract(WorkLoad,
+                                                 position=results['POSITION'],
+                                                 semester_planning=results['SEMESTER_PLANNING'],
+                                                 professor=results['PROFESSOR'])
+    logger.info(f"✓ POSITION_SEMESTER: {len(results['POSITION_SEMESTER'])} records")
 
     # Generate SQL directly from extracted values (string IDs preserved)
     for table in [
         'DEPARTMENT', 'POSITION', 'SEMESTER_PLANNING', 'STUDY_PROGRAM',
         'TEACHER', 'SUBJECT', 'PROFESSOR', 'LECTURER',
-        'OFFERING', 'OFFERING_ASSIGNMENT', 'COURSE', 'POSITION_PROFESSOR',
-        'DEPUTAT_ACCOUNT', 'SERVICE_REQUEST', 'PROGRAMM_SUBJECT_REQUIREMENT'
+        'OFFERING', 'OFFERING_ASSIGNMENT', 'POSITION_SEMESTER',
+        'DEPUTAT_ACCOUNT', 'SERVICE_REQUEST'
     ]:
         if table in results:
             sql = generate_insert_sql(table, results[table])
