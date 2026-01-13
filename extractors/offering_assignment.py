@@ -80,7 +80,7 @@ class OfferingAssignmentExtractor(DataExtractor):
             # Find matching offering
             offering_rec = None
             for o in offering:
-                if o['FK_SUBJECT'] == str(row['sbjNo']):
+                if o['FK_S_ID'] == str(row['sbjNo']):
                     offering_rec = o
                     break
             
