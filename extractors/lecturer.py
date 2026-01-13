@@ -1,6 +1,9 @@
 import pandas as pd
+import logging
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
+
+logger = logging.getLogger(__name__)
 
 class LecturerExtractor(DataExtractor):
     """Extract lecturers (teachers where isprof = 'FALSCH') with supervisor lookup"""
@@ -11,13 +14,30 @@ class LecturerExtractor(DataExtractor):
     
     @property
     def dependencies(self) -> List[str]:
-        return ["TEACHER"]  # Need teachers data for supervisor lookup
+        return ["TEACHER", "PROFESSOR"]  # Need teachers and professors data for supervisor lookup
     
-    def extract(self, OfferedCourses: pd.DataFrame, teacher: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(
+        self,
+        OfferedCourses: pd.DataFrame,
+        teacher: List[Dict[str, Any]],
+        professor: List[Dict[str, Any]],
+        **kwargs
+    ) -> List[Dict[str, Any]]:
         """
         Extract lecturers and resolve supervisor foreign keys.
         Same logic as original getLecturers function with name-based supervisor lookup.
         """
+        if not teacher or not professor:
+            logger.warning("Missing dependencies")
+            return []
+
+        professor_ids = set()
+        for prof in professor:
+            if prof.get('P_ID') is not None:
+                professor_ids.add(prof['P_ID'])
+            elif prof.get('T_ID') is not None:
+                professor_ids.add(prof['T_ID'])
+
         # Filter for lecturers only (non-professors)
         lecturersDF = OfferedCourses[
             OfferedCourses['isprof'] == 'FALSCH'
@@ -33,15 +53,18 @@ class LecturerExtractor(DataExtractor):
             if not pd.isna(row['supervisor']) and isinstance(row['supervisor'], str):
                 supervisor_name = str(row['supervisor']).lower().strip()
                 
-                # Search through teachers for name matches
+                # Search through professors only (supervisor must be a professor)
                 for teacher_record in teacher:
+                    teacher_id = teacher_record.get('T_ID')
+                    if teacher_id not in professor_ids:
+                        continue
                     teacher_name = str(teacher_record.get('T_NAME') or '').lower().strip()
                     teacher_lastname = str(teacher_record.get('T_LASTNAME') or '').lower().strip()
                     
                     # Check if supervisor name matches teacher's first name or last name
                     if (supervisor_name and teacher_name and supervisor_name in teacher_name) or \
                        (supervisor_name and teacher_lastname and supervisor_name in teacher_lastname):
-                        supervisor = teacher_record['T_ID']
+                        supervisor = teacher_id
                         break
             
             lecturer = {

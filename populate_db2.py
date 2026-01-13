@@ -156,7 +156,8 @@ def extract_all_data(OfferedCourses, WorkLoad):
     # LECTURER
     lec_ext = LecturerExtractor()
     results['LECTURER'] = lec_ext.extract(OfferedCourses,
-                                         teacher=results['TEACHER'])
+                                         teacher=results['TEACHER'],
+                                         professor=results['PROFESSOR'])
     logger.info(f"✓ LECTURER: {len(results['LECTURER'])} records")
     
     # OFFERING

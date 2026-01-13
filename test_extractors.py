@@ -24,11 +24,9 @@ from lecturer import LecturerExtractor
 from semester_planning import SemesterPlanningExtractor
 from offering import OfferingExtractor
 from offering_assignment import OfferingAssignmentExtractor
-from course import CourseExtractor
-from position_professor import PositionProfessorExtractor
 from deputat_account import DeputatAccountExtractor
 from service_request import ServiceRequestExtractor
-from programm_subject_requirement import ProgrammSubjectRequirementExtractor
+from position_semester import PositionSemesterExtractor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
@@ -132,7 +130,8 @@ def main():
     
     lec_ext = LecturerExtractor()
     results['LECTURER'] = test_extractor(lec_ext, "LECTURER", OfferedCourses,
-                                        teacher=results['TEACHER'])
+                                        teacher=results['TEACHER'],
+                                        professor=results['PROFESSOR'])
     
     offer_ext = OfferingExtractor()
     results['OFFERING'] = test_extractor(offer_ext, "OFFERING", OfferedCourses,
@@ -149,20 +148,6 @@ def main():
                                                     teacher=results['TEACHER'],
                                                     semester_planning=results['SEMESTER_PLANNING'])
     
-    course_ext = CourseExtractor()
-    results['COURSE'] = test_extractor(course_ext, "COURSE", OfferedCourses,
-                                       offering=results['OFFERING'],
-                                       teacher=results['TEACHER'],
-                                       subject=results['SUBJECT'])
-    
-    pp_ext = PositionProfessorExtractor()
-    results['POSITION_PROFESSOR'] = test_extractor(pp_ext, "POSITION_PROFESSOR",
-                                                   WorkLoad,
-                                                   professor=results['PROFESSOR'],
-                                                   position=results['POSITION'],
-                                                   semester_planning=results['SEMESTER_PLANNING'],
-                                                   teacher=results['TEACHER'])
-    
     da_ext = DeputatAccountExtractor()
     results['DEPUTAT_ACCOUNT'] = test_extractor(da_ext, "DEPUTAT_ACCOUNT",
                                                 teacher=results['TEACHER'],
@@ -175,13 +160,14 @@ def main():
                                                 semester_planning=results['SEMESTER_PLANNING'],
                                                 department=results['DEPARTMENT'])
     
-    psr_ext = ProgrammSubjectRequirementExtractor()
-    results['PROGRAMM_SUBJECT_REQUIREMENT'] = test_extractor(psr_ext, 
-                                                             "PROGRAMM_SUBJECT_REQUIREMENT",
-                                                             OfferedCourses,
-                                                             study_program=results['STUDY_PROGRAM'],
-                                                             subject=results['SUBJECT'],
-                                                             semester_planning=results['SEMESTER_PLANNING'])
+    ps_ext = PositionSemesterExtractor()
+    results['POSITION_SEMESTER'] = test_extractor(ps_ext, "POSITION_SEMESTER",
+                                                  WorkLoad,
+                                                  position=results['POSITION'],
+                                                  semester_planning=results['SEMESTER_PLANNING'],
+                                                  professor=results['PROFESSOR'],
+                                                  teacher=results['TEACHER'])
+    
     
     # Summary
     logger.info("\n\n" + "="*60)
