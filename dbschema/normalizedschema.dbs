@@ -3,7 +3,10 @@
 	<comment><![CDATA[Normalized schema for information system]]></comment>
 	<schema name="public" >
 		<table name="DEPARTMENT" spec="" >
-			<column name="D_NAME" type="VARCHAR" length="100" mandatory="y" />
+			<comment><![CDATA[Stores the different faculties/departments of the university.]]></comment>
+			<column name="D_NAME" type="VARCHAR" length="100" mandatory="y" >
+				<comment><![CDATA[Unique name of the faculty or department.]]></comment>
+			</column>
 			<index name="pk_DEPARTMENT" unique="PRIMARY_KEY" >
 				<column name="D_NAME" />
 			</index>
@@ -21,30 +24,53 @@
 			</fk>
 		</table>
 		<table name="DEPUTAT_ACCOUNT" spec="" >
-			<column name="ACC_ID" type="INT" mandatory="y" />
-			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" />
-			<column name="FK_SP_ID" prior="FK_SEMESTER_PLANNING" type="INT" />
-			<column name="ACC_BASELINE_HOURS" type="DECIMAL" length="4" decimal="2" />
-			<column name="ACC_CARRYOVER" type="DECIMAL" length="4" decimal="2" />
+			<comment><![CDATA[Tracks the baseline workload and carryovers from previous semesters.]]></comment>
+			<column name="ACC_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique ID for the teacher''s account per semester.]]></comment>
+			</column>
+			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" >
+				<comment><![CDATA[Reference to the teacher whose balance is being tracked.]]></comment>
+			</column>
+			<column name="FK_SP_ID" prior="FK_SEMESTER_PLANNING" type="INT" >
+				<comment><![CDATA[The semester to which this balance record belongs.]]></comment>
+			</column>
+			<column name="ACC_BASELINE_HOURS" type="DECIMAL" length="4" decimal="2" >
+				<comment><![CDATA[The target workload (e.g., 18.0 for professors) before reductions.]]></comment>
+			</column>
+			<column name="ACC_CARRYOVER" type="DECIMAL" length="4" decimal="2" >
+				<comment><![CDATA[Workload balance carried over from the previous semester (positive or negative).]]></comment>
+			</column>
 			<index name="pk_DEPUTAT_ACCOUNT" unique="PRIMARY_KEY" >
 				<column name="ACC_ID" />
 			</index>
 		</table>
 		<table name="LECTURER" spec="" >
-			<column name="T_ID" prior="L_ID" type="INT" mandatory="y" />
-			<column name="L_STREET_ADDRESS" type="VARCHAR" length="255" />
+			<comment><![CDATA[Specialization of TEACHER. For external lecturers (Lehrbeauftragte).]]></comment>
+			<column name="T_ID" prior="L_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Primary key and Foreign Key referencing TEACHER (1:1 specialization for external lecturers).]]></comment>
+			</column>
+			<column name="L_STREET_ADDRESS" type="VARCHAR" length="255" >
+				<comment><![CDATA[Specific home or office address of the external lecturer (if required).]]></comment>
+			</column>
 			<index name="pk_LECTURER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
 			</index>
 		</table>
 		<table name="OFFERING" spec="" >
-			<column name="O_ID" type="INT" mandatory="y" />
+			<comment><![CDATA[The concrete instance of a subject in a specific semester. Handles group splitting.]]></comment>
+			<column name="O_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique ID for a specific subject instance in a semester.]]></comment>
+			</column>
 			<column name="FK_S_ID" prior="FK_SUBJECT" type="INT" />
 			<column name="FK_SP_ID" prior="FK_SEMESTER_PLANNING" type="INT" />
 			<column name="O_GROUP_COUNT" type="INT" >
 				<defo><![CDATA[1]]></defo>
+				<comment><![CDATA[Crucial for workload: Number of parallel groups (e.g., 1 lecture, 3 lab groups).
+Number of parallel groups. Total workload = S_STUPO_HOURS * O_GROUP_COUNT.]]></comment>
 			</column>
-			<column name="O_TYPE" type="VARCHAR" length="20" />
+			<column name="O_TYPE" type="VARCHAR" length="20" >
+				<comment><![CDATA[Type of course: Lecture (V), Exercise (U), or Seminar (S).]]></comment>
+			</column>
 			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
 				<column name="O_ID" />
 			</index>
@@ -53,18 +79,35 @@
 			</fk>
 		</table>
 		<table name="OFFERING_ASSIGNMENT" spec="" >
-			<column name="OA_ID" type="INT" mandatory="y" />
-			<column name="FK_O_ID" prior="FK_OFFERING" type="INT" />
-			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" />
-			<column name="OA_ASSIGNED_HOURS" type="DECIMAL" length="4" decimal="2" />
-			<column name="OA_ROLE" type="VARCHAR" length="50" />
+			<comment><![CDATA[The bridge between a teacher and a specific offering. Defines who teaches how much.]]></comment>
+			<column name="OA_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique ID for the link between teacher and course.]]></comment>
+			</column>
+			<column name="FK_O_ID" prior="FK_OFFERING" type="INT" >
+				<comment><![CDATA[Reference to the specific course offering in a semester.]]></comment>
+			</column>
+			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" >
+				<comment><![CDATA[Reference to the person who will teach this course.]]></comment>
+			</column>
+			<column name="OA_ASSIGNED_HOURS" type="DECIMAL" length="4" decimal="2" >
+				<comment><![CDATA[The actual teaching load (Dozenten-Wochenstunden) assigned to this person.
+The specific workload hours (DWS) assigned to this individual teacher.]]></comment>
+			</column>
+			<column name="OA_ROLE" type="VARCHAR" length="50" >
+				<comment><![CDATA[The role of the teacher in this course (e.g., Main Lecturer, Tutor).]]></comment>
+			</column>
 			<index name="pk_OFFERING_ASSIGNMENT" unique="PRIMARY_KEY" >
 				<column name="OA_ID" />
 			</index>
 		</table>
 		<table name="POSTAL_CODE" spec="" >
-			<column name="ZIP" type="VARCHAR" length="10" mandatory="y" />
-			<column name="CITY" type="VARCHAR" length="100" mandatory="y" />
+			<comment><![CDATA[3NF: Separates ZIP and City to avoid transitive dependencies.]]></comment>
+			<column name="ZIP" type="VARCHAR" length="10" mandatory="y" >
+				<comment><![CDATA[Postal code serving as the primary key.]]></comment>
+			</column>
+			<column name="CITY" type="VARCHAR" length="100" mandatory="y" >
+				<comment><![CDATA[City name associated with the ZIP (3NF normalization)]]></comment>
+			</column>
 			<index name="pk_POSTAL_CODE" unique="PRIMARY_KEY" >
 				<column name="ZIP" />
 			</index>
@@ -73,19 +116,29 @@
 			</fk>
 		</table>
 		<table name="PROFESSOR" spec="" >
-			<column name="T_ID" prior="P_ID" type="INT" mandatory="y" />
-			<column name="P_ROOM" type="VARCHAR" length="50" />
+			<comment><![CDATA[Specialization of TEACHER. Only for staff with professor status.]]></comment>
+			<column name="T_ID" prior="P_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Primary key and Foreign Key referencing TEACHER (1:1 specialization).]]></comment>
+			</column>
+			<column name="P_ROOM" type="VARCHAR" length="50" >
+				<comment><![CDATA[Dedicated office room number for the professor.]]></comment>
+			</column>
 			<index name="pk_PROFESSOR" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
 			</index>
 		</table>
 		<table name="SEMESTER_PLANNING" spec="" >
-			<comment><![CDATA[Semester planning]]></comment>
-			<column name="SP_ID" type="INT" mandatory="y" />
-			<column name="SP_TERM" type="VARCHAR" length="20" mandatory="y" />
+			<comment><![CDATA[Defines the planning period (e.g., WS1516) and its status.]]></comment>
+			<column name="SP_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Internal unique identifier for the planning period.]]></comment>
+			</column>
+			<column name="SP_TERM" type="VARCHAR" length="20" mandatory="y" >
+				<comment><![CDATA[Human-readable term name, e.g., WS1516 or SS16.]]></comment>
+			</column>
 			<column name="SP_VERSION_NR" type="INT" />
 			<column name="SP_IS_FINAL" type="BOOLEAN" >
 				<defo><![CDATA[FALSE]]></defo>
+				<comment><![CDATA[Flag indicating if the planning for this semester is locked.]]></comment>
 			</column>
 			<index name="pk_SEMESTER_PLANNING" unique="PRIMARY_KEY" >
 				<column name="SP_ID" />
@@ -104,23 +157,44 @@
 			</fk>
 		</table>
 		<table name="SERVICE_REQUEST" spec="" >
-			<column name="SR_ID" type="INT" mandatory="y" />
-			<column name="FK_S_ID" prior="FK_SUBJECT" type="INT" />
-			<column name="FK_REQUESTING_D_NAME" prior="FK_REQUESTING_D_ID" type="VARCHAR" length="100" />
-			<column name="FK_PROVIDING_D_NAME" prior="FK_PROVIDING_DEPT" type="VARCHAR" length="100" />
-			<column name="SR_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" />
+			<comment><![CDATA[Captures when one faculty needs a subject to be taught by another (Import/Export).]]></comment>
+			<column name="SR_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique ID for a specific service negotiation record.]]></comment>
+			</column>
+			<column name="FK_S_ID" prior="FK_SUBJECT" type="INT" >
+				<comment><![CDATA[Reference to the subject being requested as a service.]]></comment>
+			</column>
+			<column name="FK_REQUESTING_D_NAME" prior="FK_REQUESTING_D_ID" type="VARCHAR" length="100" >
+				<comment><![CDATA[The department that needs the service (Import).]]></comment>
+			</column>
+			<column name="FK_PROVIDING_D_NAME" prior="FK_PROVIDING_DEPT" type="VARCHAR" length="100" >
+				<comment><![CDATA[The department that provides the teacher (Export).]]></comment>
+			</column>
+			<column name="SR_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" >
+				<comment><![CDATA[The weekly hours (SWS) requested for this service.]]></comment>
+			</column>
 			<column name="SR_STATUS" type="VARCHAR" length="50" >
 				<defo><![CDATA['Requested']]></defo>
+				<comment><![CDATA[Current state of the request: Requested, Approved, or Rejected.]]></comment>
 			</column>
-			<column name="FK_SEMESTER" type="INT" />
-			<column name="SR_NOTES" type="TEXT" />
+			<column name="FK_SEMESTER" type="INT" >
+				<comment><![CDATA[The semester for which this service is valid.]]></comment>
+			</column>
+			<column name="SR_NOTES" type="TEXT" >
+				<comment><![CDATA[Internal comments regarding the service agreement.]]></comment>
+			</column>
 			<index name="pk_SERVICE_REQUEST" unique="PRIMARY_KEY" >
 				<column name="SR_ID" />
 			</index>
 		</table>
 		<table name="STUDY_PROGRAM" spec="" >
-			<column name="ST_NAME" type="VARCHAR" length="100" mandatory="y" />
-			<column name="FK_D_NAME" prior="FK_DEPARTMENT" type="VARCHAR" length="100" />
+			<comment><![CDATA[Represents degree programs like "Software Engineering" (SWB).]]></comment>
+			<column name="ST_NAME" type="VARCHAR" length="100" mandatory="y" >
+				<comment><![CDATA[Unique name of the degree program (e.g., "Informatik", "Wirtschaftsingenieurwesen")]]></comment>
+			</column>
+			<column name="FK_D_NAME" prior="FK_DEPARTMENT" type="VARCHAR" length="100" >
+				<comment><![CDATA[Links the degree program to its managing faculty.]]></comment>
+			</column>
 			<index name="pk_STUDY_PROGRAM" unique="PRIMARY_KEY" >
 				<column name="ST_NAME" />
 			</index>
@@ -129,9 +203,14 @@
 			</fk>
 		</table>
 		<table name="SUBJECT" spec="" >
-			<column name="S_ID" type="INT" mandatory="y" />
+			<comment><![CDATA[Abstract modules from the study regulations (StuPO) with their target hours.]]></comment>
+			<column name="S_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique subject number as defined in the StuPO.]]></comment>
+			</column>
 			<column name="S_NAME" type="VARCHAR" length="255" mandatory="y" />
-			<column name="S_STUPO_HOURS" type="DECIMAL" length="4" decimal="2" />
+			<column name="S_STUPO_HOURS" type="DECIMAL" length="4" decimal="2" >
+				<comment><![CDATA[Standard weekly hours (SWS) as defined by study regulations.]]></comment>
+			</column>
 			<column name="S_SEMESTER" type="INT" mandatory="y" >
 				<comment><![CDATA[Valid values: 1-7]]></comment>
 			</column>
@@ -147,11 +226,18 @@
 			</fk>
 		</table>
 		<table name="TEACHER" spec="" >
+			<comment><![CDATA[General staff table. Contains all persons who can teach.]]></comment>
 			<column name="T_ID" type="INT" mandatory="y" />
-			<column name="T_NAME" type="VARCHAR" length="100" />
+			<column name="T_NAME" type="VARCHAR" length="100" >
+				<comment><![CDATA[Unique ID for the staff member.]]></comment>
+			</column>
 			<column name="T_LASTNAME" type="VARCHAR" length="100" />
-			<column name="FK_D_NAME" prior="FK_DEPARTMENT" type="VARCHAR" length="100" />
-			<column name="FK_ZIP" type="VARCHAR" length="10" />
+			<column name="FK_D_NAME" prior="FK_DEPARTMENT" type="VARCHAR" length="100" >
+				<comment><![CDATA[Reference to the staff member''s home department.]]></comment>
+			</column>
+			<column name="FK_ZIP" type="VARCHAR" length="10" >
+				<comment><![CDATA[Reference to address data (3NF: Moved out of teacher table).]]></comment>
+			</column>
 			<column name="T_NOTES" type="TEXT" />
 			<index name="pk_TEACHER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
@@ -173,10 +259,17 @@
 			</fk>
 		</table>
 		<table name="TEACHING_REDUCTION" spec="" >
-			<column name="R_ID" type="INT" mandatory="y" />
+			<comment><![CDATA[Stores reductions (Nachlässe) for research or administration, as seen in the PDFs.]]></comment>
+			<column name="R_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique ID for a workload reduction record.]]></comment>
+			</column>
 			<column name="FK_T_ID" prior="FK_TEACHER" type="INT" />
-			<column name="R_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" />
-			<column name="R_REASON" type="VARCHAR" length="255" />
+			<column name="R_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" >
+				<comment><![CDATA[Amount of hours subtracted from the teacher''s mandatory workload.]]></comment>
+			</column>
+			<column name="R_REASON" type="VARCHAR" length="255" >
+				<comment><![CDATA[Description of why the reduction was granted (e.g., Research, Dean duties).]]></comment>
+			</column>
 			<column name="FK_SEMESTER" type="INT" />
 			<index name="pk_TEACHING_REDUCTION" unique="PRIMARY_KEY" >
 				<column name="R_ID" />
@@ -184,18 +277,18 @@
 		</table>
 	</schema>
 	<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
-		<entity schema="public" name="PROFESSOR" color="3986C1" x="1292" y="760" />
-		<entity schema="public" name="TEACHING_REDUCTION" color="3986C1" x="57" y="418" />
-		<entity schema="public" name="TEACHER" color="3986C1" x="627" y="646" />
-		<entity schema="public" name="LECTURER" color="3986C1" x="114" y="684" />
-		<entity schema="public" name="OFFERING" color="3986C1" x="437" y="95" />
-		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
-		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="342" y="437" />
-		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1425" y="304" />
 		<entity schema="public" name="DEPARTMENT" color="3986C1" x="1026" y="570" />
 		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1330" y="665" />
-		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
-		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
 		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
+		<entity schema="public" name="TEACHER" color="3986C1" x="627" y="646" />
+		<entity schema="public" name="PROFESSOR" color="3986C1" x="1121" y="779" />
+		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
+		<entity schema="public" name="OFFERING" color="3986C1" x="437" y="95" />
+		<entity schema="public" name="TEACHING_REDUCTION" color="3986C1" x="57" y="418" />
+		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1425" y="304" />
+		<entity schema="public" name="LECTURER" color="3986C1" x="114" y="684" />
+		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
+		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
+		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="342" y="437" />
 	</layout>
 </project>
