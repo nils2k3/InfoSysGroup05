@@ -28,6 +28,7 @@ from offering_assignment import OfferingAssignmentExtractor
 from deputat_account import DeputatAccountExtractor
 from service_request import ServiceRequestExtractor
 from position_semester import PositionSemesterExtractor
+from position_assignment import PositionAssignmentExtractor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
@@ -72,6 +73,10 @@ def test_extractor(extractor, name, *args, **kwargs):
     try:
         records = extractor.extract(*args, **kwargs)
         logger.info(f"✓ {name} extracted {len(records)} records")
+        if (name == 'TEACHER' or name == 'PROFESSOR') and len(records) > 0:
+            # Show count of professors vs total teachers
+            prof_count = sum(1 for r in records if r.get('T_ISPROFESSOR', False))
+            logger.info(f"   - Professors: {prof_count} / {len(records)}")
         
         if records:
             logger.info(f"Sample record: {records[0]}")
@@ -167,9 +172,16 @@ def main():
     results['POSITION_SEMESTER'] = test_extractor(ps_ext, "POSITION_SEMESTER",
                                                   WorkLoad,
                                                   position=results['POSITION'],
-                                                  semester_planning=results['SEMESTER_PLANNING'],
-                                                  professor=results['PROFESSOR'],
-                                                  teacher=results['TEACHER'])
+                                                  semester_planning=results['SEMESTER_PLANNING'])
+
+    pa_ext = PositionAssignmentExtractor()
+    results['POSITION_ASSIGNMENT'] = test_extractor(pa_ext, "POSITION_ASSIGNMENT",
+                                                    WorkLoad,
+                                                    position_semester=results['POSITION_SEMESTER'],
+                                                    position=results['POSITION'],
+                                                    semester_planning=results['SEMESTER_PLANNING'],
+                                                    professor=results['PROFESSOR'],
+                                                    teacher=results['TEACHER'])
     
     
     # Summary

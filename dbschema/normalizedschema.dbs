@@ -112,7 +112,7 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			</fk>
 		</table>
 		<table name="POSITION_SEMESTER" spec="" >
-			<comment><![CDATA[Tracks whether a position is required and assigned in a specific semester.]]></comment>
+			<comment><![CDATA[Tracks whether a position is required in a specific semester.]]></comment>
 			<column name="PS_ID" type="INT" mandatory="y" >
 				<comment><![CDATA[Unique identifier for a position offering in a semester.]]></comment>
 			</column>
@@ -122,18 +122,37 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			<column name="FK_SP_ID" prior="FK_SEMESTER_PLANNING" type="INT" mandatory="y" >
 				<comment><![CDATA[Reference to the semester in which the position is available.]]></comment>
 			</column>
-			<column name="FK_P_ID" prior="FK_PROFESSOR" type="INT" >
-				<comment><![CDATA[Assigned professor; NULL means the position is open.]]></comment>
-			</column>
-			<column name="PS_REDUCTION_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" >
-				<comment><![CDATA[Teaching reduction hours granted for holding this position.]]></comment>
-			</column>
 			<index name="pk_POSITION_SEMESTER" unique="PRIMARY_KEY" >
 				<column name="PS_ID" />
 			</index>
 			<index name="unq_POSITION_SEMESTER" unique="UNIQUE_INDEX" >
 				<column name="FK_PO_ID" />
 				<column name="FK_SP_ID" />
+			</index>
+			<fk name="fk_POSITION_SEMESTER_POSITION_ASSIGNMENT" to_schema="public" to_table="POSITION_ASSIGNMENT" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="PS_ID" pk="FK_PS_ID" />
+			</fk>
+		</table>
+		<table name="POSITION_ASSIGNMENT" spec="" >
+			<comment><![CDATA[Assignment of professors to positions for a specific semester.]]></comment>
+			<column name="PA_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Unique identifier for a position assignment.]]></comment>
+			</column>
+			<column name="FK_PS_ID" prior="FK_POSITION_SEMESTER" type="INT" mandatory="y" >
+				<comment><![CDATA[Reference to the position offering in a semester.]]></comment>
+			</column>
+			<column name="FK_P_ID" prior="FK_PROFESSOR" type="INT" mandatory="y" >
+				<comment><![CDATA[Reference to the assigned professor.]]></comment>
+			</column>
+			<column name="PA_REDUCTION_HOURS" type="DECIMAL" length="4" decimal="2" mandatory="y" >
+				<comment><![CDATA[Teaching reduction hours granted to this professor for the position.]]></comment>
+			</column>
+			<index name="pk_POSITION_ASSIGNMENT" unique="PRIMARY_KEY" >
+				<column name="PA_ID" />
+			</index>
+			<index name="unq_POSITION_ASSIGNMENT" unique="UNIQUE_INDEX" >
+				<column name="FK_PS_ID" />
+				<column name="FK_P_ID" />
 			</index>
 		</table>
 		<table name="POSTAL_CODE" spec="" >
@@ -162,7 +181,7 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			<index name="pk_PROFESSOR" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
 			</index>
-			<fk name="fk_PROFESSOR_POSITION_SEMESTER" to_schema="public" to_table="POSITION_SEMESTER" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
+			<fk name="fk_PROFESSOR_POSITION_ASSIGNMENT" to_schema="public" to_table="POSITION_ASSIGNMENT" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
 				<fk_column name="T_ID" pk="FK_P_ID" />
 			</fk>
 		</table>
@@ -304,20 +323,21 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			</fk>
 		</table>
 	</schema>
-	<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
-		<entity schema="public" name="DEPARTMENT" color="3986C1" x="969" y="627" />
-		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1273" y="722" />
-		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="76" y="228" />
-		<entity schema="public" name="PROFESSOR" color="3986C1" x="1064" y="836" />
+		<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
+			<entity schema="public" name="DEPARTMENT" color="3986C1" x="969" y="627" />
+			<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1273" y="722" />
+			<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="76" y="228" />
+			<entity schema="public" name="PROFESSOR" color="3986C1" x="1064" y="836" />
 		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1368" y="361" />
 		<entity schema="public" name="LECTURER" color="3986C1" x="57" y="741" />
 		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="285" y="494" />
 		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="665" y="380" />
 		<entity schema="public" name="TEACHER" color="3986C1" x="570" y="703" />
-		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="646" y="152" />
-		<entity schema="public" name="POSITION_SEMESTER" color="3986C1" x="247" y="931" />
-		<entity schema="public" name="POSITION" color="3986C1" x="741" y="1007" />
-		<entity schema="public" name="OFFERING" color="3986C1" x="380" y="57" />
-		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
-	</layout>
+			<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="646" y="152" />
+			<entity schema="public" name="POSITION_SEMESTER" color="3986C1" x="247" y="931" />
+			<entity schema="public" name="POSITION_ASSIGNMENT" color="3986C1" x="494" y="931" />
+			<entity schema="public" name="POSITION" color="3986C1" x="741" y="1007" />
+			<entity schema="public" name="OFFERING" color="3986C1" x="380" y="57" />
+			<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
+		</layout>
 </project>

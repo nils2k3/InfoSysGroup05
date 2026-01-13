@@ -1,4 +1,4 @@
--- Generated DB2 DDL from dbschema\schema.dbs
+-- Generated DB2 DDL from dbschema/schema.dbs
 -- Schema: Planning_Tool
 
 CREATE SCHEMA Planning_Tool;

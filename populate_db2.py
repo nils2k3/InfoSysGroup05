@@ -12,6 +12,7 @@ from pathlib import Path
 from typing import List, Dict, Any
 
 from extractors.position_semester import PositionSemesterExtractor
+from extractors.position_assignment import PositionAssignmentExtractor
 from extractors.professor import ProfessorExtractor
 from extractors.lecturer import LecturerExtractor
 from extractors.department import DepartmentExtractor
@@ -200,15 +201,24 @@ def extract_all_data(OfferedCourses, WorkLoad):
     ps_ext = PositionSemesterExtractor()
     results['POSITION_SEMESTER'] = ps_ext.extract(WorkLoad,
                                                  position=results['POSITION'],
-                                                 semester_planning=results['SEMESTER_PLANNING'],
-                                                 professor=results['PROFESSOR'])
+                                                 semester_planning=results['SEMESTER_PLANNING'])
     logger.info(f"✓ POSITION_SEMESTER: {len(results['POSITION_SEMESTER'])} records")
+
+    # POSITION_ASSIGNMENT
+    pa_ext = PositionAssignmentExtractor()
+    results['POSITION_ASSIGNMENT'] = pa_ext.extract(WorkLoad,
+                                                   position_semester=results['POSITION_SEMESTER'],
+                                                   position=results['POSITION'],
+                                                   semester_planning=results['SEMESTER_PLANNING'],
+                                                   professor=results['PROFESSOR'],
+                                                   teacher=results['TEACHER'])
+    logger.info(f"✓ POSITION_ASSIGNMENT: {len(results['POSITION_ASSIGNMENT'])} records")
 
     # Generate SQL directly from extracted values (string IDs preserved)
     for table in [
         'DEPARTMENT', 'POSITION', 'SEMESTER_PLANNING', 'STUDY_PROGRAM',
         'TEACHER', 'SUBJECT', 'PROFESSOR', 'LECTURER',
-        'OFFERING', 'OFFERING_ASSIGNMENT', 'POSITION_SEMESTER',
+        'OFFERING', 'OFFERING_ASSIGNMENT', 'POSITION_SEMESTER', 'POSITION_ASSIGNMENT',
         'DEPUTAT_ACCOUNT', 'SERVICE_REQUEST'
     ]:
         if table in results:
