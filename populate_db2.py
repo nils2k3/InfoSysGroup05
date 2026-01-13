@@ -10,27 +10,27 @@ import logging
 from pathlib import Path
 from typing import List, Dict, Any
 
+from extractors.professor import ProfessorExtractor
+from extractors.lecturer import LecturerExtractor
+from extractors.department import DepartmentExtractor
+from extractors.position import PositionExtractor
+from extractors.semester_planning import SemesterPlanningExtractor
+from extractors.teacher import TeacherExtractor
+from extractors.course import CourseExtractor
+from extractors.position_professor import PositionProfessorExtractor
+from extractors.deputat_account import DeputatAccountExtractor
+from extractors.service_request import ServiceRequestExtractor
+from extractors.programm_subject_requirement import ProgrammSubjectRequirementExtractor
+from extractors.subject import SubjectExtractor
+from extractors.study_program import StudyProgramExtractor
+from extractors.offering import OfferingExtractor
+from extractors.offering_assignment import OfferingAssignmentExtractor
+
 # Add extractors to path
 sys.path.insert(0, str(Path(__file__).parent / 'extractors'))
 
 import pandas as pd
 
-# Import all extractors
-from department import DepartmentExtractor
-from position import PositionExtractor
-from teacher import TeacherExtractor
-from subject import SubjectExtractor
-from study_program import StudyProgramExtractor
-from professor import ProfessorExtractor
-from lecturer import LecturerExtractor
-from semester_planning import SemesterPlanningExtractor
-from offering import OfferingExtractor
-from offering_assignment import OfferingAssignmentExtractor
-from course import CourseExtractor
-from position_professor import PositionProfessorExtractor
-from deputat_account import DeputatAccountExtractor
-from service_request import ServiceRequestExtractor
-from programm_subject_requirement import ProgrammSubjectRequirementExtractor
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(levelname)s - %(message)s')
