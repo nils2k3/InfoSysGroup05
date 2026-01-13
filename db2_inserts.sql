@@ -2,6 +2,10 @@
 -- Generated automatically from CSV data
 -- Total statements: 2692
 
+-- Connect to database and set schema
+CONNECT TO PLANNINGTOOL;
+SET CURRENT SCHEMA = PLANNING_TOOL;
+
 -- Disable autocommit for better performance
 -- Run this in DB2: db2 +c -f db2_inserts.sql
 
