@@ -264,9 +264,6 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			<column name="S_IS_ELECTIVE" type="VARCHAR" length="1" >
 				<comment><![CDATA[Decides if it is an P (Pflichtfach), Z (Zusatzfach) oder W (Wahlfach)]]></comment>
 			</column>
-			<column name="S_SEMESTER_LEVEL" type="INT" >
-				<comment><![CDATA[Gives the semester level in which the course is offered]]></comment>
-			</column>
 			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
 				<column name="S_ID" />
 			</index>

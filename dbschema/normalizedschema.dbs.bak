@@ -100,36 +100,6 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 				<column name="OA_ID" />
 			</index>
 		</table>
-		<table name="POSTAL_CODE" spec="" >
-			<comment><![CDATA[3NF: Separates ZIP and City to avoid transitive dependencies.]]></comment>
-			<column name="ZIP" type="VARCHAR" length="10" mandatory="y" >
-				<comment><![CDATA[Postal code serving as the primary key.]]></comment>
-			</column>
-			<column name="CITY" type="VARCHAR" length="100" mandatory="y" >
-				<comment><![CDATA[City name associated with the ZIP (3NF normalization)]]></comment>
-			</column>
-			<index name="pk_POSTAL_CODE" unique="PRIMARY_KEY" >
-				<column name="ZIP" />
-			</index>
-			<fk name="fk_POSTAL_CODE_TEACHER" to_schema="public" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="ZIP" pk="FK_ZIP" />
-			</fk>
-		</table>
-		<table name="PROFESSOR" spec="" >
-			<comment><![CDATA[Specialization of TEACHER. Only for staff with professor status.]]></comment>
-			<column name="T_ID" prior="P_ID" type="INT" mandatory="y" >
-				<comment><![CDATA[Primary key and Foreign Key referencing TEACHER (1:1 specialization).]]></comment>
-			</column>
-			<column name="P_ROOM" type="VARCHAR" length="50" >
-				<comment><![CDATA[Dedicated office room number for the professor.]]></comment>
-			</column>
-			<index name="pk_PROFESSOR" unique="PRIMARY_KEY" >
-				<column name="T_ID" />
-			</index>
-			<fk name="fk_PROFESSOR_POSITION_SEMESTER" to_schema="public" to_table="POSITION_SEMESTER" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
-				<fk_column name="T_ID" pk="FK_P_ID" />
-			</fk>
-		</table>
 		<table name="POSITION" spec="" >
 			<comment><![CDATA[Defines university positions that can carry a teaching reduction.]]></comment>
 			<column name="PO_ID" type="INT" mandatory="y" >
@@ -169,6 +139,36 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 				<column name="FK_PO_ID" />
 				<column name="FK_SP_ID" />
 			</index>
+		</table>
+		<table name="POSTAL_CODE" spec="" >
+			<comment><![CDATA[3NF: Separates ZIP and City to avoid transitive dependencies.]]></comment>
+			<column name="ZIP" type="VARCHAR" length="10" mandatory="y" >
+				<comment><![CDATA[Postal code serving as the primary key.]]></comment>
+			</column>
+			<column name="CITY" type="VARCHAR" length="100" mandatory="y" >
+				<comment><![CDATA[City name associated with the ZIP (3NF normalization)]]></comment>
+			</column>
+			<index name="pk_POSTAL_CODE" unique="PRIMARY_KEY" >
+				<column name="ZIP" />
+			</index>
+			<fk name="fk_POSTAL_CODE_TEACHER" to_schema="public" to_table="TEACHER" type="Identifying" mandatory="y" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="ZIP" pk="FK_ZIP" />
+			</fk>
+		</table>
+		<table name="PROFESSOR" spec="" >
+			<comment><![CDATA[Specialization of TEACHER. Only for staff with professor status.]]></comment>
+			<column name="T_ID" prior="P_ID" type="INT" mandatory="y" >
+				<comment><![CDATA[Primary key and Foreign Key referencing TEACHER (1:1 specialization).]]></comment>
+			</column>
+			<column name="P_ROOM" type="VARCHAR" length="50" >
+				<comment><![CDATA[Dedicated office room number for the professor.]]></comment>
+			</column>
+			<index name="pk_PROFESSOR" unique="PRIMARY_KEY" >
+				<column name="T_ID" />
+			</index>
+			<fk name="fk_PROFESSOR_POSITION_SEMESTER" to_schema="public" to_table="POSITION_SEMESTER" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="T_ID" pk="FK_P_ID" />
+			</fk>
 		</table>
 		<table name="SEMESTER_PLANNING" spec="" >
 			<comment><![CDATA[Defines the planning period (e.g., WS1516) and its status.]]></comment>
@@ -258,6 +258,15 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 				<comment><![CDATA[Valid values: 1-7]]></comment>
 			</column>
 			<column name="FK_ST_NAME" prior="FK_STUDY_PROGRAM" type="VARCHAR" length="100" />
+			<column name="S_NOTES" type="VARCHAR" length="100" >
+				<comment><![CDATA[Notes for the subject]]></comment>
+			</column>
+			<column name="S_IS_ELECTIVE" type="VARCHAR" length="1" >
+				<comment><![CDATA[Decides if it is an P (Pflichtfach), Z (Zusatzfach) oder W (Wahlfach)]]></comment>
+			</column>
+			<column name="S_SEMESTER_LEVEL" type="INT" >
+				<comment><![CDATA[Gives the semester level in which the course is offered]]></comment>
+			</column>
 			<index name="pk_SUBJECT" unique="PRIMARY_KEY" >
 				<column name="S_ID" />
 			</index>
@@ -302,20 +311,20 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 			</fk>
 		</table>
 	</schema>
-		<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
-			<entity schema="public" name="DEPARTMENT" color="3986C1" x="1026" y="570" />
-			<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1330" y="665" />
-			<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
-			<entity schema="public" name="PROFESSOR" color="3986C1" x="1121" y="779" />
-			<entity schema="public" name="POSITION" color="3986C1" x="1310" y="540" />
-			<entity schema="public" name="POSITION_SEMESTER" color="3986C1" x="1240" y="420" />
-			<entity schema="public" name="OFFERING" color="3986C1" x="437" y="95" />
-			<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1425" y="304" />
-			<entity schema="public" name="LECTURER" color="3986C1" x="114" y="684" />
-			<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
-			<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="342" y="437" />
-			<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
-			<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
-			<entity schema="public" name="TEACHER" color="3986C1" x="627" y="646" />
-		</layout>
+	<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
+		<entity schema="public" name="DEPARTMENT" color="3986C1" x="969" y="627" />
+		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1273" y="722" />
+		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="76" y="228" />
+		<entity schema="public" name="PROFESSOR" color="3986C1" x="1064" y="836" />
+		<entity schema="public" name="OFFERING" color="3986C1" x="380" y="152" />
+		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1368" y="361" />
+		<entity schema="public" name="LECTURER" color="3986C1" x="57" y="741" />
+		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="285" y="494" />
+		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="665" y="380" />
+		<entity schema="public" name="TEACHER" color="3986C1" x="570" y="703" />
+		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="646" y="152" />
+		<entity schema="public" name="POSITION_SEMESTER" color="3986C1" x="247" y="931" />
+		<entity schema="public" name="POSITION" color="3986C1" x="741" y="1007" />
+		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
+	</layout>
 </project>
