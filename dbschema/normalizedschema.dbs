@@ -239,6 +239,9 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 				<comment><![CDATA[Reference to address data (3NF: Moved out of teacher table).]]></comment>
 			</column>
 			<column name="T_NOTES" type="TEXT" />
+			<column name="T_IS_ACTIVE" type="BOOLEAN" mandatory="y" >
+				<comment><![CDATA[gives the information about the teacher if he is still hired or not]]></comment>
+			</column>
 			<index name="pk_TEACHER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
 			</index>
@@ -280,15 +283,15 @@ The specific workload hours (DWS) assigned to this individual teacher.]]></comme
 		<entity schema="public" name="DEPARTMENT" color="3986C1" x="1026" y="570" />
 		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1330" y="665" />
 		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
-		<entity schema="public" name="TEACHER" color="3986C1" x="627" y="646" />
 		<entity schema="public" name="PROFESSOR" color="3986C1" x="1121" y="779" />
-		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
 		<entity schema="public" name="OFFERING" color="3986C1" x="437" y="95" />
-		<entity schema="public" name="TEACHING_REDUCTION" color="3986C1" x="57" y="418" />
 		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1425" y="304" />
 		<entity schema="public" name="LECTURER" color="3986C1" x="114" y="684" />
 		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
-		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
 		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="342" y="437" />
+		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
+		<entity schema="public" name="TEACHING_REDUCTION" color="3986C1" x="57" y="418" />
+		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
+		<entity schema="public" name="TEACHER" color="3986C1" x="627" y="646" />
 	</layout>
 </project>
