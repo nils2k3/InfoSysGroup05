@@ -116,6 +116,7 @@
 			</index>
 		</table>
 		<table name="SEMESTER_PLANNING" spec="" >
+			<comment><![CDATA[Semester planning]]></comment>
 			<column name="SP_ID" type="INT" mandatory="y" />
 			<column name="SP_TERM" type="VARCHAR" length="20" mandatory="y" />
 			<column name="SP_VERSION_NR" type="INT" />
@@ -241,12 +242,12 @@
 		<entity schema="public" name="OFFERING" color="3986C1" x="437" y="95" />
 		<entity schema="public" name="OFFERING_ASSIGNMENT" color="3986C1" x="722" y="323" />
 		<entity schema="public" name="DEPUTAT_ACCOUNT" color="3986C1" x="342" y="437" />
-		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
 		<entity schema="public" name="STUDY_PROGRAM" color="3986C1" x="1425" y="304" />
 		<entity schema="public" name="DEPARTMENT" color="3986C1" x="1026" y="570" />
 		<entity schema="public" name="POSTAL_CODE" color="3986C1" x="1330" y="665" />
 		<entity schema="public" name="SERVICE_REQUEST" color="3986C1" x="1045" y="266" />
 		<entity schema="public" name="SUBJECT" color="3986C1" x="1064" y="57" />
 		<entity schema="public" name="DEPARTMENT_0" color="3986C1" x="1026" y="570" />
+		<entity schema="public" name="SEMESTER_PLANNING" color="3986C1" x="133" y="171" />
 	</layout>
 </project>
