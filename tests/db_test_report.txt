@@ -1,30 +1,51 @@
 ********************* Test Case 1 *********************
 Case: Insert subject with S_TYPE = W
 Title: Insert subject
-SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) SELECT 1768412304, ST_NAME, 'Test Subject W', 1, 1.00, 'Test insert', 'W' FROM STUDY_PROGRAM FETCH FIRST 1 ROW ONLY
+SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) SELECT 1768413420, ST_NAME, 'Test Subject W', 1, 1.00, 'Test insert', 'W' FROM STUDY_PROGRAM FETCH FIRST 1 ROW ONLY
 Result: ok
 Detail: affected_rows=1
-Title: Verify subject 1768412304
-SQL: SELECT * FROM SUBJECT WHERE S_ID = 1768412304
+Title: Verify subject 1768413420
+SQL: SELECT * FROM SUBJECT WHERE S_ID = 1768413420
 Result: ok
 Rows (first 10):
-  {'S_ID': 1768412304, 'S_NAME': 'Test Subject W', 'S_STUPO_HOURS': '1.00', 'S_SEMESTER': 1, 'FK_ST_NAME': 'AN', 'S_NOTES': 'Test insert', 'S_TYPE': 'W'}
+  {'S_ID': 1768413420, 'S_NAME': 'Test Subject W', 'S_STUPO_HOURS': '1.00', 'S_SEMESTER': 1, 'FK_ST_NAME': 'AN', 'S_NOTES': 'Test insert', 'S_TYPE': 'W'}
 **************** End of Test Case 1 ****************
 
 ********************* Test Case 2 *********************
 Case: Insert lecturer
 Title: Insert teacher for lecturer
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768412305, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768413421, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert lecturer
-SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768412305, 'Test Street 1')
+SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768413421, 'Test Street 1')
 Result: ok
 Detail: affected_rows=1
-Title: Verify lecturer 1768412305
-SQL: SELECT * FROM LECTURER WHERE T_ID = 1768412305
+Title: Verify lecturer 1768413421
+SQL: SELECT * FROM LECTURER WHERE T_ID = 1768413421
 Result: ok
 Rows (first 10):
-  {'T_ID': 1768412305, 'L_STREET_ADDRESS': 'Test Street 1', 'L_SUPERVISOR': None}
+  {'T_ID': 1768413421, 'L_STREET_ADDRESS': 'Test Street 1', 'L_SUPERVISOR': None}
 **************** End of Test Case 2 ****************
+
+********************* Test Case 3 *********************
+Case: Deactivate lecturer
+Title: Insert teacher for lecturer
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768413421, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
+Result: ok
+Detail: affected_rows=1
+Title: Insert lecturer
+SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768413421, 'Test Street 2')
+Result: ok
+Detail: affected_rows=1
+Title: Deactivate lecturer
+SQL: UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = 1768413421
+Result: ok
+Detail: affected_rows=1
+Title: Verify lecturer inactive 1768413421
+SQL: SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = 1768413421
+Result: ok
+Rows (first 10):
+  {'T_ID': 1768413421, 'T_IS_ACTIVE': 0}
+**************** End of Test Case 3 ****************
 

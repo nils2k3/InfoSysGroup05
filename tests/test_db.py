@@ -230,3 +230,45 @@ def test_insert_lecturer(conn, report_items):
             run_statement(conn, report_items, delete_teacher_title, delete_teacher_sql, fetch_limit=0, report=False, case=case)
         except Exception:
             pass
+
+
+def test_deactivate_lecturer(conn, report_items):
+    case = "Deactivate lecturer"
+    test_id = int(time.time())
+
+    teacher_sql = (
+        "INSERT INTO TEACHER "
+        "(T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) "
+        "VALUES "
+        f"({test_id}, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)"
+    )
+    lecturer_sql = (
+        "INSERT INTO LECTURER "
+        "(T_ID, L_STREET_ADDRESS) "
+        "VALUES "
+        f"({test_id}, 'Test Street 2')"
+    )
+    update_sql = f"UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = {test_id}"
+    try:
+        affected, _rows = run_statement(conn, report_items, "Insert teacher for lecturer", teacher_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert lecturer", lecturer_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Deactivate lecturer", update_sql, case=case)
+        assert affected >= 1
+        select_title = f"Verify lecturer inactive {test_id}"
+        select_sql = f"SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = {test_id}"
+        run_statement(conn, report_items, select_title, select_sql, case=case)
+    finally:
+        delete_lecturer_title = f"Cleanup lecturer {test_id}"
+        delete_lecturer_sql = f"DELETE FROM LECTURER WHERE T_ID = {test_id}"
+        delete_teacher_title = f"Cleanup teacher {test_id}"
+        delete_teacher_sql = f"DELETE FROM TEACHER WHERE T_ID = {test_id}"
+        try:
+            run_statement(conn, report_items, delete_lecturer_title, delete_lecturer_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+        try:
+            run_statement(conn, report_items, delete_teacher_title, delete_teacher_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
