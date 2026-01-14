@@ -118,6 +118,7 @@ def test_db_connection(conn):
 
 def test_insert_subject_type_w(conn, report_items):
     title = "Insert subject with S_TYPE = W"
+    
     sql = (
         "INSERT INTO SUBJECT "
         "(S_NR, S_STUDY_PROGRAM, S_NAME, S_SEMESTER, S_STUPO_HOURS, "
