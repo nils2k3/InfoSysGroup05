@@ -52,24 +52,90 @@ class ServiceRequestExtractor(DataExtractor):
             logger.warning("Missing dependencies")
             return []
         
-        subject_lookup = {s['S_ID']: s for s in subject}
-        semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
-        dept_names = {d['D_NAME'] for d in department}
+        def normalize_text(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return " ".join(text.split()).lower()
+
+        def normalize_program(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
+        def normalize_semester(value: Any) -> int:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            try:
+                return int(float(value))
+            except (ValueError, TypeError):
+                return None
+
+        def normalize_term(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
+        subject_lookup = {}
+        for s in subject:
+            key = (
+                normalize_text(s.get('S_NAME')),
+                normalize_semester(s.get('S_SEMESTER')),
+                normalize_program(s.get('FK_ST_NAME')),
+            )
+            if None in key:
+                continue
+            if key in subject_lookup:
+                logger.warning(f"Duplicate subject key {key}, keeping first match")
+                continue
+            subject_lookup[key] = s['S_ID']
+
+        semester_lookup = {}
+        for s in semester_planning:
+            term_key = normalize_term(s.get('SP_TERM'))
+            if term_key:
+                semester_lookup[term_key] = s['SP_ID']
+
+        dept_names = {str(d['D_NAME']).strip() for d in department if d.get('D_NAME')}
         
         # Filter for service courses (srvProvider != srvClient)
         df = OfferedCourses[OfferedCourses['srvProvider'] != OfferedCourses['srvClient']].copy()
-        df = df[['sbjNo', 'term', 'srvProvider', 'srvClient', 'numSchd']].drop_duplicates()
+        df = df[['sbjName', 'sbjlevel', 'studyPrg', 'term', 'srvProvider', 'srvClient', 'numSchd', 'assNotes']]
+        df['sbjName_norm'] = df['sbjName'].apply(normalize_text)
+        df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
+        df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
+        df['term_norm'] = df['term'].apply(normalize_term)
+        df = df.dropna(subset=['sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'])
+        df = df.drop_duplicates(subset=['sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm',
+                                        'srvProvider', 'srvClient'])
         
         records = []
         id_counter = 1
         
+        missing_subject = 0
+        missing_semester = 0
+
         for _, row in df.iterrows():
-            sbj_no = str(row['sbjNo']).strip()
-            term = str(row['term']).strip()
             provider = str(row['srvProvider']).strip()
             client = str(row['srvClient']).strip()
-            
-            if sbj_no not in subject_lookup or term not in semester_lookup:
+
+            subject_key = (row['sbjName_norm'], row['sbjlevel_norm'], row['studyPrg_norm'])
+            subject_id = subject_lookup.get(subject_key)
+            semester_id = semester_lookup.get(row['term_norm'])
+
+            if subject_id is None:
+                missing_subject += 1
+                continue
+            if semester_id is None:
+                missing_semester += 1
                 continue
             if provider not in dept_names or client not in dept_names:
                 continue
@@ -80,16 +146,21 @@ class ServiceRequestExtractor(DataExtractor):
             
             record = {
                 'SR_ID': id_counter,
-                'FK_S_ID': sbj_no,
+                'FK_S_ID': subject_id,
                 'FK_REQUESTING_D_NAME': client,
                 'FK_PROVIDING_D_NAME': provider,
                 'SR_HOURS': float(hours),
                 'SR_STATUS': 'APPROVED',
-                'FK_SEMESTER_PLANNING': semester_lookup[term],
-                "SR_NOTES": str(row['assNotes']) if 'assNotes' in row and not pd.isna(row['assNotes']) else None
+                'FK_SEMESTER': semester_id,
+                "SR_NOTES": str(row['assNotes']) if not pd.isna(row['assNotes']) else None
             }
             records.append(record)
             id_counter += 1
+
+        if missing_subject:
+            logger.warning(f"{missing_subject} service requests skipped (subject not found)")
+        if missing_semester:
+            logger.warning(f"{missing_semester} service requests skipped (semester not found)")
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

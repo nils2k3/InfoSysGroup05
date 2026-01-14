@@ -154,6 +154,7 @@ def main():
                                                     OfferedCourses,
                                                     offering=results['OFFERING'],
                                                     teacher=results['TEACHER'],
+                                                    subject=results['SUBJECT'],
                                                     semester_planning=results['SEMESTER_PLANNING'])
     
     da_ext = DeputatAccountExtractor()

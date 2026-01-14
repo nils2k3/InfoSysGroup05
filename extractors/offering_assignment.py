@@ -29,9 +29,9 @@ class OfferingAssignmentExtractor(DataExtractor):
     @property
     def dependencies(self) -> List[str]:
         """Return list of table names this extractor depends on"""
-        return ['OFFERING', 'TEACHER']
+        return ['OFFERING', 'TEACHER', 'SUBJECT', 'SEMESTER_PLANNING']
     
-    def extract(self, OfferedCourses: pd.DataFrame, offering: List[Dict[str, Any]], teacher: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, OfferedCourses: pd.DataFrame, offering: List[Dict[str, Any]], teacher: List[Dict[str, Any]], subject: List[Dict[str, Any]] = None, **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for OFFERING_ASSIGNMENT table.
         
@@ -47,60 +47,135 @@ class OfferingAssignmentExtractor(DataExtractor):
         Returns:
             List of dictionaries representing OFFERING_ASSIGNMENT table records
         """
-        if not offering or not teacher:
+        if not offering or not teacher or not subject:
             logger.warning("Missing dependencies")
             return []
-        
+
+        def normalize_text(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return " ".join(text.split()).lower()
+
+        def normalize_program(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
+        def normalize_semester(value: Any) -> int:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            try:
+                return int(float(value))
+            except (ValueError, TypeError):
+                return None
+
+        def normalize_term(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
         # Create offering lookup by subject+term
         offering_by_subj_term = {}
         for o in offering:
             key = (o['FK_S_ID'], o['FK_SP_ID'])
             offering_by_subj_term[key] = o
-        
+
+        # Create subject lookup by natural key
+        subject_lookup = {}
+        for s in subject:
+            key = (
+                normalize_text(s.get('S_NAME')),
+                normalize_semester(s.get('S_SEMESTER')),
+                normalize_program(s.get('FK_ST_NAME')),
+            )
+            if None in key:
+                continue
+            if key in subject_lookup:
+                logger.warning(f"Duplicate subject key {key}, keeping first match")
+                continue
+            subject_lookup[key] = s['S_ID']
+
         # Create semester lookup
-        semester_terms = {}
+        semester_lookup = {}
         if 'semester_planning' in kwargs:
             for s in kwargs['semester_planning']:
-                semester_terms[s['SP_ID']] = s['SP_TERM']
-        
+                term_key = normalize_term(s.get('SP_TERM'))
+                if term_key:
+                    semester_lookup[term_key] = s['SP_ID']
+
         teacher_ids = {t['T_ID'] for t in teacher}
-        
-        df = OfferedCourses[['lecNo', 'sbjNo', 'term', 'cntLec']].copy()
-        df = df.dropna(subset=['lecNo', 'sbjNo', 'term'])
-        df = df[df['lecNo'] != 0]
+
+        df = OfferedCourses[['lecNo', 'sbjName', 'sbjlevel', 'studyPrg', 'term', 'cntLec']].copy()
+        df['teacher_id'] = pd.to_numeric(df['lecNo'], errors='coerce')
+        df['sbjName_norm'] = df['sbjName'].apply(normalize_text)
+        df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
+        df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
+        df['term_norm'] = df['term'].apply(normalize_term)
+        df['cntLec'] = pd.to_numeric(df['cntLec'], errors='coerce').fillna(0)
+
+        df = df.dropna(subset=['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'])
+        df = df[df['teacher_id'] != 0]
+        df['teacher_id'] = df['teacher_id'].astype(int)
+
+        df = (
+            df.groupby(['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'], as_index=False)
+            ['cntLec'].sum()
+        )
         
         records = []
         id_counter = 1
         
+        missing_subject = 0
+        missing_semester = 0
+        missing_offering = 0
+
         for _, row in df.iterrows():
-            teacher_id = int(row['lecNo'])
+            teacher_id = row['teacher_id']
             if teacher_id not in teacher_ids:
                 continue
-            
-            # Find matching offering
-            offering_rec = None
-            for o in offering:
-                if o['FK_S_ID'] == str(row['sbjNo']):
-                    offering_rec = o
-                    break
-            
-            if not offering_rec:
+
+            subject_key = (row['sbjName_norm'], row['sbjlevel_norm'], row['studyPrg_norm'])
+            subject_id = subject_lookup.get(subject_key)
+            semester_id = semester_lookup.get(row['term_norm'])
+
+            if subject_id is None:
+                missing_subject += 1
                 continue
-            
-            hours = pd.to_numeric(row['cntLec'], errors='coerce')
-            if pd.isna(hours):
-                hours = 0.0
+            if semester_id is None:
+                missing_semester += 1
+                continue
+
+            offering_rec = offering_by_subj_term.get((subject_id, semester_id))
+            if not offering_rec:
+                missing_offering += 1
+                continue
             
             record = {
                 'OA_ID': id_counter,
                 'FK_O_ID': offering_rec['O_ID'],
                 'FK_T_ID': teacher_id,
-                'OA_ASSIGNED_HOURS': float(hours),
+                'OA_ASSIGNED_HOURS': float(row['cntLec']),
                 'OA_ROLE': None
 
             }
             records.append(record)
             id_counter += 1
+
+        if missing_subject:
+            logger.warning(f"{missing_subject} assignments skipped (subject not found)")
+        if missing_semester:
+            logger.warning(f"{missing_semester} assignments skipped (semester not found)")
+        if missing_offering:
+            logger.warning(f"{missing_offering} assignments skipped (offering not found)")
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records

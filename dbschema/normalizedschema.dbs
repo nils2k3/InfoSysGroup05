@@ -65,7 +65,7 @@
 			<column name="FK_SP_ID" prior="FK_SEMESTER_PLANNING" type="INT" />
 			<column name="O_PLANNED_HOURS" prior="O_GROUP_COUNT" type="INT" >
 				<defo><![CDATA[1]]></defo>
-				<comment><![CDATA[Really planned hours. Can change per Semester]]></comment>
+				<comment><![CDATA[Actual planned hours. Can change per Semester]]></comment>
 			</column>
 			<index name="pk_OFFERING" unique="PRIMARY_KEY" >
 				<column name="O_ID" />

@@ -180,6 +180,7 @@ def extract_all_data(OfferedCourses, WorkLoad):
     results['OFFERING_ASSIGNMENT'] = oa_ext.extract(OfferedCourses,
                                                    offering=results['OFFERING'],
                                                    teacher=results['TEACHER'],
+                                                   subject=results['SUBJECT'],
                                                    semester_planning=results['SEMESTER_PLANNING'])
     logger.info(f"✓ OFFERING_ASSIGNMENT: {len(results['OFFERING_ASSIGNMENT'])} records")
     

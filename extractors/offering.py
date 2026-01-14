@@ -51,39 +51,103 @@ class OfferingExtractor(DataExtractor):
             logger.warning("Missing dependencies")
             return []
         
+        def normalize_text(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return " ".join(text.split()).lower()
+
+        def normalize_program(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
+        def normalize_semester(value: Any) -> int:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            try:
+                return int(float(value))
+            except (ValueError, TypeError):
+                return None
+
+        def normalize_term(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            if not text:
+                return None
+            return text.upper()
+
         # Create lookups
-        subject_lookup = {s['S_ID']: s for s in subject}
-        semester_lookup = {s['SP_TERM']: s['SP_ID'] for s in semester_planning}
+        subject_lookup = {}
+        for s in subject:
+            key = (
+                normalize_text(s.get('S_NAME')),
+                normalize_semester(s.get('S_SEMESTER')),
+                normalize_program(s.get('FK_ST_NAME')),
+            )
+            if None in key:
+                continue
+            if key in subject_lookup:
+                logger.warning(f"Duplicate subject key {key}, keeping first match")
+                continue
+            subject_lookup[key] = s['S_ID']
+
+        semester_lookup = {}
+        for s in semester_planning:
+            term_key = normalize_term(s.get('SP_TERM'))
+            if term_key:
+                semester_lookup[term_key] = s['SP_ID']
         
         # Get unique subject-term combinations
-        df = OfferedCourses[['sbjNo', 'term', 'numSchd']].copy()
-        df['sbjNo'] = df['sbjNo'].astype(str).str.strip()
-        df['term'] = df['term'].astype(str).str.strip()
+        df = OfferedCourses[['sbjName', 'sbjlevel', 'studyPrg', 'term', 'numSchd']].copy()
+        df['sbjName_norm'] = df['sbjName'].apply(normalize_text)
+        df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
+        df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
+        df['term_norm'] = df['term'].apply(normalize_term)
         df['numSchd'] = pd.to_numeric(df['numSchd'], errors='coerce').fillna(0)
-        
-        unique = df.drop_duplicates(subset=['sbjNo', 'term']).reset_index(drop=True)
+
+        df = df.dropna(subset=['sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'])
+        unique = (
+            df.groupby(['sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'], as_index=False)
+            ['numSchd'].max()
+        )
         
         records = []
         id_counter = 1
         
+        missing_subject = 0
+        missing_semester = 0
         for _, row in unique.iterrows():
-            sbj_no = row['sbjNo']
-            term = row['term']
-            
-            if sbj_no not in subject_lookup or term not in semester_lookup:
+            subject_key = (row['sbjName_norm'], row['sbjlevel_norm'], row['studyPrg_norm'])
+            subject_id = subject_lookup.get(subject_key)
+            sem_id = semester_lookup.get(row['term_norm'])
+
+            if subject_id is None:
+                missing_subject += 1
                 continue
-            
-            subj = subject_lookup[sbj_no]
-            sem_id = semester_lookup[term]
+            if sem_id is None:
+                missing_semester += 1
+                continue
             
             record = {
                 'O_ID': id_counter,
-                'FK_S_ID': subj['S_ID'],
+                'FK_S_ID': subject_id,
                 'FK_SP_ID': sem_id,
                 'O_PLANNED_HOURS': float(row['numSchd']),
             }
             records.append(record)
             id_counter += 1
-        
+
+        if missing_subject:
+            logger.warning(f"{missing_subject} offerings skipped (subject not found)")
+        if missing_semester:
+            logger.warning(f"{missing_semester} offerings skipped (semester not found)")
+
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records
