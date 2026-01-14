@@ -1,107 +1,107 @@
 ********************* Test Case 1 *********************
 Case: Insert subject with S_TYPE = W
 Title: Insert subject
-SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) SELECT 1768422884, ST_NAME, 'Test Subject W', 1, 1.00, 'Test insert', 'W' FROM STUDY_PROGRAM FETCH FIRST 1 ROW ONLY
+SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) SELECT 1768425318, ST_NAME, 'Test Subject W', 1, 1.00, 'Test insert', 'W' FROM STUDY_PROGRAM FETCH FIRST 1 ROW ONLY
 Result: ok
 Detail: affected_rows=1
-Title: Verify subject 1768422884
-SQL: SELECT * FROM SUBJECT WHERE S_ID = 1768422884
+Title: Verify subject 1768425318
+SQL: SELECT * FROM SUBJECT WHERE S_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'S_ID': 1768422884, 'S_NAME': 'Test Subject W', 'S_STUPO_HOURS': '1.00', 'S_SEMESTER': 1, 'FK_ST_NAME': 'AN', 'S_NOTES': 'Test insert', 'S_TYPE': 'W'}
+  {'S_ID': 1768425318, 'S_NAME': 'Test Subject W', 'S_STUPO_HOURS': '1.00', 'S_SEMESTER': 1, 'FK_ST_NAME': 'AN', 'S_NOTES': 'Test insert', 'S_TYPE': 'W'}
 **************** End of Test Case 1 ****************
 
 ********************* Test Case 2 *********************
 Case: Insert lecturer
 Title: Insert teacher for lecturer
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768422884, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768425318, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert lecturer
-SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768422884, 'Test Street 1')
+SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768425318, 'Test Street 1')
 Result: ok
 Detail: affected_rows=1
-Title: Verify lecturer 1768422884
-SQL: SELECT * FROM LECTURER WHERE T_ID = 1768422884
+Title: Verify lecturer 1768425318
+SQL: SELECT * FROM LECTURER WHERE T_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'T_ID': 1768422884, 'L_STREET_ADDRESS': 'Test Street 1', 'L_SUPERVISOR': None}
+  {'T_ID': 1768425318, 'L_STREET_ADDRESS': 'Test Street 1', 'L_SUPERVISOR': None}
 **************** End of Test Case 2 ****************
 
 ********************* Test Case 3 *********************
 Case: Deactivate lecturer
 Title: Insert teacher for lecturer
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768422884, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768425318, 'Test', 'Lecturer', NULL, NULL, 'Test insert', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert lecturer
-SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768422884, 'Test Street 2')
+SQL: INSERT INTO LECTURER (T_ID, L_STREET_ADDRESS) VALUES (1768425318, 'Test Street 2')
 Result: ok
 Detail: affected_rows=1
 Title: Deactivate lecturer
-SQL: UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = 1768422884
+SQL: UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = 1768425318
 Result: ok
 Detail: affected_rows=1
-Title: Verify lecturer inactive 1768422884
-SQL: SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = 1768422884
+Title: Verify lecturer inactive 1768425318
+SQL: SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'T_ID': 1768422884, 'T_IS_ACTIVE': 0}
+  {'T_ID': 1768425318, 'T_IS_ACTIVE': 0}
 **************** End of Test Case 3 ****************
 
 ********************* Test Case 4 *********************
 Case: Deactivate professor
 Title: Insert teacher for professor
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768422884, 'Test', 'Professor', NULL, NULL, 'Test insert', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768425318, 'Test', 'Professor', NULL, NULL, 'Test insert', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert professor
-SQL: INSERT INTO PROFESSOR (T_ID, P_ROOM) VALUES (1768422884, 'R-101')
+SQL: INSERT INTO PROFESSOR (T_ID, P_ROOM) VALUES (1768425318, 'R-101')
 Result: ok
 Detail: affected_rows=1
 Title: Deactivate professor
-SQL: UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = 1768422884
+SQL: UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = 1768425318
 Result: ok
 Detail: affected_rows=1
-Title: Verify professor inactive 1768422884
-SQL: SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = 1768422884
+Title: Verify professor inactive 1768425318
+SQL: SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'T_ID': 1768422884, 'T_IS_ACTIVE': 0}
+  {'T_ID': 1768425318, 'T_IS_ACTIVE': 0}
 **************** End of Test Case 4 ****************
 
 ********************* Test Case 5 *********************
 Case: Hire professor
 Title: Insert postal code
-SQL: INSERT INTO POSTAL_CODE (ZIP, CITY) VALUES ('Z22884', 'Test City')
+SQL: INSERT INTO POSTAL_CODE (ZIP, CITY) VALUES ('Z25318', 'Test City')
 Result: ok
 Detail: affected_rows=1
 Title: Insert teacher for professor
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768422884, 'Test', 'Professor', NULL, 'Z22884', 'Test hire', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768425318, 'Test', 'Professor', NULL, 'Z25318', 'Test hire', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert professor
-SQL: INSERT INTO PROFESSOR (T_ID, P_ROOM) VALUES (1768422884, 'R-202')
+SQL: INSERT INTO PROFESSOR (T_ID, P_ROOM) VALUES (1768425318, 'R-202')
 Result: ok
 Detail: affected_rows=1
-Title: Verify hired professor 1768422884
-SQL: SELECT T.T_ID, T.T_IS_ACTIVE, T.FK_ZIP, P.P_ROOM FROM TEACHER T JOIN PROFESSOR P ON P.T_ID = T.T_ID WHERE T.T_ID = 1768422884
+Title: Verify hired professor 1768425318
+SQL: SELECT T.T_ID, T.T_IS_ACTIVE, T.FK_ZIP, P.P_ROOM FROM TEACHER T JOIN PROFESSOR P ON P.T_ID = T.T_ID WHERE T.T_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'T_ID': 1768422884, 'T_IS_ACTIVE': 1, 'FK_ZIP': 'Z22884', 'P_ROOM': 'R-202'}
+  {'T_ID': 1768425318, 'T_IS_ACTIVE': 1, 'FK_ZIP': 'Z25318', 'P_ROOM': 'R-202'}
 **************** End of Test Case 5 ****************
 
 ********************* Test Case 6 *********************
 Case: Insert semester planning
 Title: Start a new semester planning session for a upcoming term
-SQL: INSERT INTO SEMESTER_PLANNING (SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) VALUES (1768422884, 'WS99', 1, 0)
+SQL: INSERT INTO SEMESTER_PLANNING (SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) VALUES (1768425318, 'WS99', 1, 0)
 Result: ok
 Detail: affected_rows=1
-Title: Verify semester planning 1768422884
-SQL: SELECT * FROM SEMESTER_PLANNING WHERE SP_ID = 1768422884
+Title: Verify semester planning 1768425318
+SQL: SELECT * FROM SEMESTER_PLANNING WHERE SP_ID = 1768425318
 Result: ok
 Rows (first 10):
-  {'SP_ID': 1768422884, 'SP_TERM': 'WS99', 'SP_VERSION_NR': 1, 'SP_IS_FINAL': 0}
+  {'SP_ID': 1768425318, 'SP_TERM': 'WS99', 'SP_VERSION_NR': 1, 'SP_IS_FINAL': 0}
 **************** End of Test Case 6 ****************
 
 ********************* Test Case 7 *********************
@@ -199,10 +199,12 @@ Result: ok
 Rows (first 10):
   {'T_ID': 86}
 Title: Compute professor workload
-SQL: SELECT T.T_ID, O.FK_SP_ID, COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) AS ASSIGNED_HOURS, COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS REDUCTION_HOURS, COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) + COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS TOTAL_WORKLOAD FROM TEACHER T LEFT JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID LEFT JOIN OFFERING O ON O.O_ID = OA.FK_O_ID LEFT JOIN POSITION_ASSIGNMENT PA ON PA.FK_P_ID = T.T_ID LEFT JOIN POSITION_SEMESTER PS ON PS.PS_ID = PA.FK_PS_ID WHERE T.T_ID = 86 AND (O.FK_SP_ID = 3 OR PS.FK_SP_ID = 3) GROUP BY T.T_ID, O.FK_SP_ID
+SQL: SELECT T_ID, T_NAME, T_LASTNAME, ASSIGNED_HOURS, REDUCTION_HOURS, TOTAL_WORKLOAD, SP_TERM FROM PROFESSOR_ESTIMATED_WORKLOAD WHERE T_ID = 86
 Result: ok
 Rows (first 10):
-  {'T_ID': 86, 'FK_SP_ID': 3, 'ASSIGNED_HOURS': '17.00', 'REDUCTION_HOURS': '0.00', 'TOTAL_WORKLOAD': '17.00'}
+  {'T_ID': 86, 'T_NAME': 'Reinhard', 'T_LASTNAME': 'Malz', 'ASSIGNED_HOURS': '11.00', 'REDUCTION_HOURS': '0.00', 'TOTAL_WORKLOAD': '11.00', 'SP_TERM': 'SS15'}
+  {'T_ID': 86, 'T_NAME': 'Reinhard', 'T_LASTNAME': 'Malz', 'ASSIGNED_HOURS': '14.00', 'REDUCTION_HOURS': '0.00', 'TOTAL_WORKLOAD': '14.00', 'SP_TERM': 'WS1415'}
+  {'T_ID': 86, 'T_NAME': 'Reinhard', 'T_LASTNAME': 'Malz', 'ASSIGNED_HOURS': '17.00', 'REDUCTION_HOURS': '0.00', 'TOTAL_WORKLOAD': '17.00', 'SP_TERM': 'WS1516'}
 **************** End of Test Case 9 ****************
 
 ********************* Test Case 10 *********************
@@ -213,78 +215,68 @@ Result: ok
 Rows (first 10):
   {'SP_ID': 3}
 Title: Report offered courses for semester
-SQL: SELECT O.O_ID, O.FK_SP_ID, S.S_ID, S.S_NAME, S.S_SEMESTER, SP.ST_NAME FROM OFFERING O JOIN SUBJECT S ON S.S_ID = O.FK_S_ID LEFT JOIN STUDY_PROGRAM SP ON SP.ST_NAME = S.FK_ST_NAME WHERE O.FK_SP_ID = 3 ORDER BY S.S_NAME
+SQL: SELECT S_ID, S_NAME, S_SEMESTER, ST_NAME, FK_SP_ID, SP_TERM FROM STUDY_PROGRAM_OFFERED_COURSES WHERE FK_SP_ID = 3 ORDER BY S_NAME
 Result: ok
 Rows (first 10):
-  {'O_ID': 7, 'FK_SP_ID': 3, 'S_ID': 303, 'S_NAME': 'Algorithmen', 'S_SEMESTER': 7, 'ST_NAME': 'TIB'}
-  {'O_ID': 3, 'FK_SP_ID': 3, 'S_ID': 274, 'S_NAME': 'Algorithmen', 'S_SEMESTER': 7, 'ST_NAME': 'KTB'}
-  {'O_ID': 11, 'FK_SP_ID': 3, 'S_ID': 107, 'S_NAME': 'Algorithmen und Datenstrukturen', 'S_SEMESTER': 3, 'ST_NAME': 'SWB'}
-  {'O_ID': 14, 'FK_SP_ID': 3, 'S_ID': 108, 'S_NAME': 'Algorithmen und Datenstrukturen', 'S_SEMESTER': 4, 'ST_NAME': 'WKB'}
-  {'O_ID': 67, 'FK_SP_ID': 3, 'S_ID': 23, 'S_NAME': 'BWL', 'S_SEMESTER': 1, 'ST_NAME': 'WKB'}
-  {'O_ID': 22, 'FK_SP_ID': 3, 'S_ID': 203, 'S_NAME': 'Bachelorarbeit ', 'S_SEMESTER': 7, 'ST_NAME': 'SWB'}
-  {'O_ID': 30, 'FK_SP_ID': 3, 'S_ID': 205, 'S_NAME': 'Bachelorarbeit', 'S_SEMESTER': 7, 'ST_NAME': 'WKB'}
-  {'O_ID': 27, 'FK_SP_ID': 3, 'S_ID': 204, 'S_NAME': 'Bachelorarbeit', 'S_SEMESTER': 7, 'ST_NAME': 'TIB'}
-  {'O_ID': 19, 'FK_SP_ID': 3, 'S_ID': 202, 'S_NAME': 'Bachelorarbeit ', 'S_SEMESTER': 7, 'ST_NAME': 'MIB'}
-  {'O_ID': 33, 'FK_SP_ID': 3, 'S_ID': 325, 'S_NAME': 'Bachelorarbeiten ASM," Export', 'S_SEMESTER': 1, 'ST_NAME': 'ASM'}
+  {'S_ID': 303, 'S_NAME': 'Algorithmen', 'S_SEMESTER': 7, 'ST_NAME': 'TIB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 274, 'S_NAME': 'Algorithmen', 'S_SEMESTER': 7, 'ST_NAME': 'KTB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 107, 'S_NAME': 'Algorithmen und Datenstrukturen', 'S_SEMESTER': 3, 'ST_NAME': 'SWB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 108, 'S_NAME': 'Algorithmen und Datenstrukturen', 'S_SEMESTER': 4, 'ST_NAME': 'WKB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 23, 'S_NAME': 'BWL', 'S_SEMESTER': 1, 'ST_NAME': 'WKB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 203, 'S_NAME': 'Bachelorarbeit ', 'S_SEMESTER': 7, 'ST_NAME': 'SWB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 205, 'S_NAME': 'Bachelorarbeit', 'S_SEMESTER': 7, 'ST_NAME': 'WKB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 204, 'S_NAME': 'Bachelorarbeit', 'S_SEMESTER': 7, 'ST_NAME': 'TIB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 202, 'S_NAME': 'Bachelorarbeit ', 'S_SEMESTER': 7, 'ST_NAME': 'MIB', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
+  {'S_ID': 325, 'S_NAME': 'Bachelorarbeiten ASM," Export', 'S_SEMESTER': 1, 'ST_NAME': 'ASM', 'FK_SP_ID': 3, 'SP_TERM': 'WS1516'}
 **************** End of Test Case 10 ****************
 
 ********************* Test Case 11 *********************
 Case: Update offering assignment actual hours
 Title: Insert department
-SQL: INSERT INTO DEPARTMENT (D_NAME) VALUES ('D1768422884')
+SQL: INSERT INTO DEPARTMENT (D_NAME) VALUES ('D1768425319')
 Result: ok
 Detail: affected_rows=1
 Title: Insert study program
-SQL: INSERT INTO STUDY_PROGRAM (ST_NAME, FK_D_NAME) VALUES ('S1768422884', 'D1768422884')
+SQL: INSERT INTO STUDY_PROGRAM (ST_NAME, FK_D_NAME) VALUES ('S1768425319', 'D1768425319')
 Result: ok
 Detail: affected_rows=1
 Title: Insert subject
-SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) VALUES (1768422884, 'S1768422884', 'Test Subject', 1, 1.00, 'Test', 'W')
+SQL: INSERT INTO SUBJECT (S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) VALUES (1768425319, 'S1768425319', 'Test Subject', 1, 1.00, 'Test', 'W')
 Result: ok
 Detail: affected_rows=1
 Title: Insert semester planning
-SQL: INSERT INTO SEMESTER_PLANNING (SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) VALUES (1768422884, 'TS1768422884', 1, 0)
+SQL: INSERT INTO SEMESTER_PLANNING (SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) VALUES (1768425319, 'TS1768425319', 1, 0)
 Result: ok
 Detail: affected_rows=1
 Title: Insert offering
-SQL: INSERT INTO OFFERING (O_ID, FK_S_ID, FK_SP_ID, O_PLANNED_HOURS) VALUES (1768422884, 1768422884, 1768422884, 1)
+SQL: INSERT INTO OFFERING (O_ID, FK_S_ID, FK_SP_ID, O_PLANNED_HOURS) VALUES (1768425319, 1768425319, 1768425319, 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert teacher
-SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768422884, 'Test', 'Teacher', 'D1768422884', NULL, 'Test', 1)
+SQL: INSERT INTO TEACHER (T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) VALUES (1768425319, 'Test', 'Teacher', 'D1768425319', NULL, 'Test', 1)
 Result: ok
 Detail: affected_rows=1
 Title: Insert offering assignment
-SQL: INSERT INTO OFFERING_ASSIGNMENT (OA_ID, FK_O_ID, FK_T_ID, OA_ASSIGNED_HOURS, OA_ACTUAL_HOURS, OA_ROLE) VALUES (1768422884, 1768422884, 1768422884, 2.0, 0.0, NULL)
+SQL: INSERT INTO OFFERING_ASSIGNMENT (OA_ID, FK_O_ID, FK_T_ID, OA_ASSIGNED_HOURS, OA_ACTUAL_HOURS, OA_ROLE) VALUES (1768425319, 1768425319, 1768425319, 2.0, 0.0, NULL)
 Result: ok
 Detail: affected_rows=1
 Title: Update offering assignment actual hours
-SQL: UPDATE OFFERING_ASSIGNMENT SET OA_ACTUAL_HOURS = 7.0 WHERE OA_ID = 1768422884
+SQL: UPDATE OFFERING_ASSIGNMENT SET OA_ACTUAL_HOURS = 7.0 WHERE OA_ID = 1768425319
 Result: ok
 Detail: affected_rows=1
 Title: Verify updated actual hours
-SQL: SELECT OA_ID, OA_ACTUAL_HOURS FROM OFFERING_ASSIGNMENT WHERE OA_ID = 1768422884
+SQL: SELECT OA_ID, OA_ACTUAL_HOURS FROM OFFERING_ASSIGNMENT WHERE OA_ID = 1768425319
 Result: ok
 Rows (first 10):
-  {'OA_ID': 1768422884, 'OA_ACTUAL_HOURS': '7.00'}
+  {'OA_ID': 1768425319, 'OA_ACTUAL_HOURS': '7.00'}
 **************** End of Test Case 11 ****************
 
 ********************* Test Case 12 *********************
 Case: Teacher actual workload for WS1415
-Title: Get semester WS1415
-SQL: SELECT SP_ID FROM SEMESTER_PLANNING WHERE SP_TERM = 'WS1415'
-Result: ok
-Rows (first 10):
-  {'SP_ID': 2}
-Title: Get teacher Nonnast
-SQL: SELECT T_ID FROM TEACHER WHERE T_LASTNAME = 'Nonnast'
-Result: ok
-Rows (first 10):
-  {'T_ID': 16}
 Title: Compute teacher actual workload
-SQL: SELECT T.T_ID, SP.SP_TERM, COALESCE(SUM(OA.OA_ACTUAL_HOURS), 0) AS ACTUAL_HOURS FROM TEACHER T JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID JOIN OFFERING O ON O.O_ID = OA.FK_O_ID JOIN SEMESTER_PLANNING SP ON SP.SP_ID = O.FK_SP_ID WHERE T.T_ID = 16 AND SP.SP_ID = 2 GROUP BY T.T_ID, SP.SP_TERM
+SQL: SELECT T_ID, T_NAME, T_LASTNAME, ACTUAL_HOURS, SP_TERM FROM TEACHER_ACTUAL_WORKLOAD WHERE T_LASTNAME = 'Nonnast' AND SP_TERM = 'WS1415'
 Result: ok
 Rows (first 10):
-  {'T_ID': 16, 'SP_TERM': 'WS1415', 'ACTUAL_HOURS': '14.00'}
+  {'T_ID': 16, 'T_NAME': 'J�rgen', 'T_LASTNAME': 'Nonnast', 'ACTUAL_HOURS': '14.00', 'SP_TERM': 'WS1415'}
 **************** End of Test Case 12 ****************
 

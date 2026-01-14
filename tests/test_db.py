@@ -511,23 +511,15 @@ def test_professor_workload_for_semester(conn, report_items):
     assert professor_id is not None
     sql = (
         "SELECT "
-        "T.T_ID, "
-        "O.FK_SP_ID, "
-        "COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) AS ASSIGNED_HOURS, "
-        "COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS REDUCTION_HOURS, "
-        "COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) + COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS TOTAL_WORKLOAD "
-        "FROM TEACHER T "
-        "LEFT JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID "
-        "LEFT JOIN OFFERING O ON O.O_ID = OA.FK_O_ID "
-        "LEFT JOIN POSITION_ASSIGNMENT PA ON PA.FK_P_ID = T.T_ID "
-        "LEFT JOIN POSITION_SEMESTER PS ON PS.PS_ID = PA.FK_PS_ID "
-        "WHERE T.T_ID = "
-        f"{professor_id} "
-        "AND (O.FK_SP_ID = "
-        f"{current_sp_id} "
-        "OR PS.FK_SP_ID = "
-        f"{current_sp_id}) "
-        "GROUP BY T.T_ID, O.FK_SP_ID"
+        "T_ID, "
+        "T_NAME, "
+        "T_LASTNAME, "
+        "ASSIGNED_HOURS, "
+        "REDUCTION_HOURS, "
+        "TOTAL_WORKLOAD, "
+        "SP_TERM "
+        "FROM PROFESSOR_ESTIMATED_WORKLOAD "
+        f"WHERE T_ID = {professor_id}"
     )
     run_statement(conn, report_items, "Compute professor workload", sql, case=case)
 
@@ -548,17 +540,15 @@ def test_report_offered_courses_for_semester(conn, report_items):
     assert current_sp_id is not None
     sql = (
         "SELECT "
-        "O.O_ID, "
-        "O.FK_SP_ID, "
-        "S.S_ID, "
-        "S.S_NAME, "
-        "S.S_SEMESTER, "
-        "SP.ST_NAME "
-        "FROM OFFERING O "
-        "JOIN SUBJECT S ON S.S_ID = O.FK_S_ID "
-        "LEFT JOIN STUDY_PROGRAM SP ON SP.ST_NAME = S.FK_ST_NAME "
-        f"WHERE O.FK_SP_ID = {current_sp_id} "
-        "ORDER BY S.S_NAME"
+        "S_ID, "
+        "S_NAME, "
+        "S_SEMESTER, "
+        "ST_NAME, "
+        "FK_SP_ID, "
+        "SP_TERM "
+        "FROM STUDY_PROGRAM_OFFERED_COURSES "
+        f"WHERE FK_SP_ID = {current_sp_id} "
+        "ORDER BY S_NAME"
     )
     run_statement(conn, report_items, "Report offered courses for semester", sql, fetch_limit=10, case=case)
 
@@ -645,26 +635,6 @@ def test_update_offering_assignment_actual_hours(conn, report_items):
 
 def test_teacher_actual_workload_for_semester(conn, report_items):
     case = "Teacher actual workload for WS1415"
-    _affected, semester_rows = run_statement(
-        conn,
-        report_items,
-        "Get semester WS1415",
-        "SELECT SP_ID FROM SEMESTER_PLANNING WHERE SP_TERM = 'WS1415'",
-        fetch_limit=1,
-        case=case,
-    )
-    semester_id = semester_rows[0]["SP_ID"] if semester_rows else None
-    _affected, teacher_rows = run_statement(
-        conn,
-        report_items,
-        "Get teacher Nonnast",
-        "SELECT T_ID FROM TEACHER WHERE T_LASTNAME = 'Nonnast'",
-        fetch_limit=1,
-        case=case,
-    )
-    teacher_id = teacher_rows[0]["T_ID"] if teacher_rows else None
-    assert semester_id is not None
-    assert teacher_id is not None
     sql = (
         "SELECT "
         "T_ID, "
@@ -673,6 +643,6 @@ def test_teacher_actual_workload_for_semester(conn, report_items):
         "ACTUAL_HOURS, "
         "SP_TERM "
         "FROM TEACHER_ACTUAL_WORKLOAD "
-        f"WHERE T_ID = {teacher_id} AND SP_TERM = 'WS1415'"
+        "WHERE T_LASTNAME = 'Nonnast' AND SP_TERM = 'WS1415'"
     )
     run_statement(conn, report_items, "Compute teacher actual workload", sql, case=case)
