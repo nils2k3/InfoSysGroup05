@@ -102,7 +102,7 @@ class ProfessorExtractor(DataExtractor):
             room = room_lookup.get(teacher_lastname, 'N/A')
 
             record = {
-                'P_ID': teacher_id,
+                'T_ID': teacher_id,
                 'P_ROOM': room
             }
             records.append(record)
