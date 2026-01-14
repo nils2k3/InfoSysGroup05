@@ -1,0 +1,6 @@
+pandas
+
+# Test and DB connectivity dependencies
+ibm-db
+pytest
+reportlab

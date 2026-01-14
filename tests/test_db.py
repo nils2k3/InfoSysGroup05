@@ -32,7 +32,7 @@ def report_items():
     items = []
     yield items
     report_path = os.path.join(os.path.dirname(__file__), "db_test_report.txt")
-    with open(report_path, "w", encoding="ascii") as handle:
+    with open(report_path, "w", encoding="utf-8", errors="replace") as handle:
         case_order = []
         case_items = {}
         for item in items:
@@ -272,3 +272,409 @@ def test_deactivate_lecturer(conn, report_items):
             run_statement(conn, report_items, delete_teacher_title, delete_teacher_sql, fetch_limit=0, report=False, case=case)
         except Exception:
             pass
+
+
+def test_deactivate_professor(conn, report_items):
+    case = "Deactivate professor"
+    test_id = int(time.time())
+
+    teacher_sql = (
+        "INSERT INTO TEACHER "
+        "(T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) "
+        "VALUES "
+        f"({test_id}, 'Test', 'Professor', NULL, NULL, 'Test insert', 1)"
+    )
+    professor_sql = (
+        "INSERT INTO PROFESSOR "
+        "(T_ID, P_ROOM) "
+        "VALUES "
+        f"({test_id}, 'R-101')"
+    )
+    update_sql = f"UPDATE TEACHER SET T_IS_ACTIVE = 0 WHERE T_ID = {test_id}"
+    try:
+        affected, _rows = run_statement(conn, report_items, "Insert teacher for professor", teacher_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert professor", professor_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Deactivate professor", update_sql, case=case)
+        assert affected >= 1
+        select_title = f"Verify professor inactive {test_id}"
+        select_sql = f"SELECT T_ID, T_IS_ACTIVE FROM TEACHER WHERE T_ID = {test_id}"
+        run_statement(conn, report_items, select_title, select_sql, case=case)
+    finally:
+        delete_professor_title = f"Cleanup professor {test_id}"
+        delete_professor_sql = f"DELETE FROM PROFESSOR WHERE T_ID = {test_id}"
+        delete_teacher_title = f"Cleanup teacher {test_id}"
+        delete_teacher_sql = f"DELETE FROM TEACHER WHERE T_ID = {test_id}"
+        try:
+            run_statement(conn, report_items, delete_professor_title, delete_professor_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+        try:
+            run_statement(conn, report_items, delete_teacher_title, delete_teacher_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+
+
+def test_hire_professor(conn, report_items):
+    case = "Hire professor"
+    test_id = int(time.time())
+    zip_code = f"Z{str(test_id)[-5:]}"
+
+    postal_sql = (
+        "INSERT INTO POSTAL_CODE "
+        "(ZIP, CITY) "
+        "VALUES "
+        f"('{zip_code}', 'Test City')"
+    )
+    teacher_sql = (
+        "INSERT INTO TEACHER "
+        "(T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) "
+        "VALUES "
+        f"({test_id}, 'Test', 'Professor', NULL, '{zip_code}', 'Test hire', 1)"
+    )
+    professor_sql = (
+        "INSERT INTO PROFESSOR "
+        "(T_ID, P_ROOM) "
+        "VALUES "
+        f"({test_id}, 'R-202')"
+    )
+    try:
+        affected, _rows = run_statement(conn, report_items, "Insert postal code", postal_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert teacher for professor", teacher_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert professor", professor_sql, case=case)
+        assert affected >= 1
+        select_title = f"Verify hired professor {test_id}"
+        select_sql = (
+            "SELECT T.T_ID, T.T_IS_ACTIVE, T.FK_ZIP, P.P_ROOM "
+            "FROM TEACHER T "
+            "JOIN PROFESSOR P ON P.T_ID = T.T_ID "
+            f"WHERE T.T_ID = {test_id}"
+        )
+        run_statement(conn, report_items, select_title, select_sql, case=case)
+    finally:
+        delete_professor_title = f"Cleanup professor {test_id}"
+        delete_professor_sql = f"DELETE FROM PROFESSOR WHERE T_ID = {test_id}"
+        delete_teacher_title = f"Cleanup teacher {test_id}"
+        delete_teacher_sql = f"DELETE FROM TEACHER WHERE T_ID = {test_id}"
+        delete_postal_title = f"Cleanup postal code {zip_code}"
+        delete_postal_sql = f"DELETE FROM POSTAL_CODE WHERE ZIP = '{zip_code}'"
+        try:
+            run_statement(conn, report_items, delete_professor_title, delete_professor_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+        try:
+            run_statement(conn, report_items, delete_teacher_title, delete_teacher_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+        try:
+            run_statement(conn, report_items, delete_postal_title, delete_postal_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+
+
+def test_insert_semester_planning(conn, report_items):
+    case = "Insert semester planning"
+    test_id = int(time.time())
+
+    insert_sql = (
+        "INSERT INTO SEMESTER_PLANNING "
+        "(SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) "
+        "VALUES "
+        f"({test_id}, 'WS99', 1, 0)"
+    )
+    try:
+        affected, _rows = run_statement(conn, report_items, "Start a new semester planning session for a upcoming term", insert_sql, case=case)
+        assert affected >= 1
+        select_title = f"Verify semester planning {test_id}"
+        select_sql = f"SELECT * FROM SEMESTER_PLANNING WHERE SP_ID = {test_id}"
+        run_statement(conn, report_items, select_title, select_sql, case=case)
+    finally:
+        delete_title = f"Cleanup semester planning {test_id}"
+        delete_sql = f"DELETE FROM SEMESTER_PLANNING WHERE SP_ID = {test_id}"
+        try:
+            run_statement(conn, report_items, delete_title, delete_sql, fetch_limit=0, report=False, case=case)
+        except Exception:
+            pass
+
+
+def test_list_subjects_for_program_semester(conn, report_items):
+    case = "List subjects for SWB semester 6"
+    sql = (
+        "SELECT S.S_ID, S.S_NAME, S.S_SEMESTER, ST.ST_NAME "
+        "FROM SUBJECT S "
+        "JOIN STUDY_PROGRAM ST ON S.FK_ST_NAME = ST.ST_NAME "
+        "WHERE ST.ST_NAME = 'SWB' AND S.S_SEMESTER = 6"
+    )
+    inserted_o_ids = []
+    try:
+        _affected, rows = run_statement(
+            conn,
+            report_items,
+            "Query subjects for SWB semester 6",
+            sql,
+            fetch_limit=1000,
+            case=case,
+        )
+        _affected, semester_rows = run_statement(
+            conn,
+            report_items,
+            "Get current semester",
+            "SELECT MAX(SP_ID) AS SP_ID FROM SEMESTER_PLANNING",
+            fetch_limit=1,
+            case=case,
+        )
+        current_sp_id = semester_rows[0]["SP_ID"] if semester_rows else None
+        assert current_sp_id is not None
+        _affected, next_id_rows = run_statement(
+            conn,
+            report_items,
+            "Get next offering id",
+            "SELECT COALESCE(MAX(O_ID), 0) + 1 AS NEXT_ID FROM OFFERING",
+            fetch_limit=1,
+            case=case,
+        )
+        next_o_id = next_id_rows[0]["NEXT_ID"] if next_id_rows else 1
+        for row in rows:
+            s_id = row.get("S_ID")
+            if s_id is None:
+                continue
+            insert_sql = (
+                "INSERT INTO OFFERING "
+                "(O_ID, FK_S_ID, FK_SP_ID, O_PLANNED_HOURS) "
+                "VALUES "
+                f"({next_o_id}, {s_id}, {current_sp_id}, 0)"
+            )
+            affected, _ = run_statement(
+                conn,
+                report_items,
+                f"Insert offering for subject {s_id}",
+                insert_sql,
+                case=case,
+            )
+            if affected >= 1:
+                inserted_o_ids.append(next_o_id)
+                next_o_id += 1
+        if inserted_o_ids:
+            verify_sql = (
+                "SELECT O_ID, FK_S_ID, FK_SP_ID "
+                "FROM OFFERING "
+                f"WHERE O_ID IN ({', '.join(str(x) for x in inserted_o_ids)})"
+            )
+            run_statement(conn, report_items, "Verify inserted offerings", verify_sql, fetch_limit=1000, case=case)
+    finally:
+        if inserted_o_ids:
+            delete_sql = (
+                "DELETE FROM OFFERING "
+                f"WHERE O_ID IN ({', '.join(str(x) for x in inserted_o_ids)})"
+            )
+            try:
+                run_statement(conn, report_items, "Cleanup offerings", delete_sql, fetch_limit=0, report=False, case=case)
+            except Exception:
+                pass
+
+
+def test_missing_offering_assignments(conn, report_items):
+    case = "Missing offering assignments"
+    sql = (
+        "SELECT O.O_ID, O.FK_S_ID, O.FK_SP_ID "
+        "FROM OFFERING O "
+        "LEFT JOIN OFFERING_ASSIGNMENT OA ON OA.FK_O_ID = O.O_ID "
+        "WHERE OA.FK_O_ID IS NULL"
+    )
+    run_statement(conn, report_items, "Find offerings without assignments", sql, case=case)
+
+
+def test_professor_workload_for_semester(conn, report_items):
+    case = "Professor workload for semester"
+    _affected, semester_rows = run_statement(
+        conn,
+        report_items,
+        "Get current semester",
+        "SELECT MAX(SP_ID) AS SP_ID FROM SEMESTER_PLANNING",
+        fetch_limit=1,
+        case=case,
+    )
+    current_sp_id = semester_rows[0]["SP_ID"] if semester_rows else None
+    _affected, professor_rows = run_statement(
+        conn,
+        report_items,
+        "Get a professor",
+        "SELECT T_ID FROM PROFESSOR FETCH FIRST 1 ROW ONLY",
+        fetch_limit=1,
+        case=case,
+    )
+    professor_id = professor_rows[0]["T_ID"] if professor_rows else None
+    assert current_sp_id is not None
+    assert professor_id is not None
+    sql = (
+        "SELECT "
+        "T.T_ID, "
+        "O.FK_SP_ID, "
+        "COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) AS ASSIGNED_HOURS, "
+        "COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS REDUCTION_HOURS, "
+        "COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) + COALESCE(SUM(PA.PA_REDUCTION_HOURS), 0) AS TOTAL_WORKLOAD "
+        "FROM TEACHER T "
+        "LEFT JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID "
+        "LEFT JOIN OFFERING O ON O.O_ID = OA.FK_O_ID "
+        "LEFT JOIN POSITION_ASSIGNMENT PA ON PA.FK_P_ID = T.T_ID "
+        "LEFT JOIN POSITION_SEMESTER PS ON PS.PS_ID = PA.FK_PS_ID "
+        "WHERE T.T_ID = "
+        f"{professor_id} "
+        "AND (O.FK_SP_ID = "
+        f"{current_sp_id} "
+        "OR PS.FK_SP_ID = "
+        f"{current_sp_id}) "
+        "GROUP BY T.T_ID, O.FK_SP_ID"
+    )
+    run_statement(conn, report_items, "Compute professor workload", sql, case=case)
+
+
+
+
+def test_report_offered_courses_for_semester(conn, report_items):
+    case = "Report offered courses for semester"
+    _affected, semester_rows = run_statement(
+        conn,
+        report_items,
+        "Get current semester",
+        "SELECT MAX(SP_ID) AS SP_ID FROM SEMESTER_PLANNING",
+        fetch_limit=1,
+        case=case,
+    )
+    current_sp_id = semester_rows[0]["SP_ID"] if semester_rows else None
+    assert current_sp_id is not None
+    sql = (
+        "SELECT "
+        "O.O_ID, "
+        "O.FK_SP_ID, "
+        "S.S_ID, "
+        "S.S_NAME, "
+        "S.S_SEMESTER, "
+        "SP.ST_NAME "
+        "FROM OFFERING O "
+        "JOIN SUBJECT S ON S.S_ID = O.FK_S_ID "
+        "LEFT JOIN STUDY_PROGRAM SP ON SP.ST_NAME = S.FK_ST_NAME "
+        f"WHERE O.FK_SP_ID = {current_sp_id} "
+        "ORDER BY S.S_NAME"
+    )
+    run_statement(conn, report_items, "Report offered courses for semester", sql, fetch_limit=10, case=case)
+
+
+def test_update_offering_assignment_actual_hours(conn, report_items):
+    case = "Update offering assignment actual hours"
+    test_id = int(time.time())
+    dept_name = f"D{test_id}"
+    study_name = f"S{test_id}"
+
+    insert_department_sql = (
+        "INSERT INTO DEPARTMENT (D_NAME) "
+        f"VALUES ('{dept_name}')"
+    )
+    insert_study_sql = (
+        "INSERT INTO STUDY_PROGRAM (ST_NAME, FK_D_NAME) "
+        f"VALUES ('{study_name}', '{dept_name}')"
+    )
+    insert_subject_sql = (
+        "INSERT INTO SUBJECT "
+        "(S_ID, FK_ST_NAME, S_NAME, S_SEMESTER, S_STUPO_HOURS, S_NOTES, S_TYPE) "
+        f"VALUES ({test_id}, '{study_name}', 'Test Subject', 1, 1.00, 'Test', 'W')"
+    )
+    insert_semester_sql = (
+        "INSERT INTO SEMESTER_PLANNING "
+        "(SP_ID, SP_TERM, SP_VERSION_NR, SP_IS_FINAL) "
+        f"VALUES ({test_id}, 'TS{test_id}', 1, 0)"
+    )
+    insert_offering_sql = (
+        "INSERT INTO OFFERING "
+        "(O_ID, FK_S_ID, FK_SP_ID, O_PLANNED_HOURS) "
+        f"VALUES ({test_id}, {test_id}, {test_id}, 1)"
+    )
+    insert_teacher_sql = (
+        "INSERT INTO TEACHER "
+        "(T_ID, T_NAME, T_LASTNAME, FK_D_NAME, FK_ZIP, T_NOTES, T_IS_ACTIVE) "
+        f"VALUES ({test_id}, 'Test', 'Teacher', '{dept_name}', NULL, 'Test', 1)"
+    )
+    insert_assignment_sql = (
+        "INSERT INTO OFFERING_ASSIGNMENT "
+        "(OA_ID, FK_O_ID, FK_T_ID, OA_ASSIGNED_HOURS, OA_ACTUAL_HOURS, OA_ROLE) "
+        f"VALUES ({test_id}, {test_id}, {test_id}, 2.0, 0.0, NULL)"
+    )
+    update_sql = (
+        "UPDATE OFFERING_ASSIGNMENT "
+        "SET OA_ACTUAL_HOURS = 7.0 "
+        f"WHERE OA_ID = {test_id}"
+    )
+    try:
+        affected, _rows = run_statement(conn, report_items, "Insert department", insert_department_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert study program", insert_study_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert subject", insert_subject_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert semester planning", insert_semester_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert offering", insert_offering_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert teacher", insert_teacher_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Insert offering assignment", insert_assignment_sql, case=case)
+        assert affected >= 1
+        affected, _rows = run_statement(conn, report_items, "Update offering assignment actual hours", update_sql, case=case)
+        assert affected >= 1
+        select_sql = f"SELECT OA_ID, OA_ACTUAL_HOURS FROM OFFERING_ASSIGNMENT WHERE OA_ID = {test_id}"
+        run_statement(conn, report_items, "Verify updated actual hours", select_sql, case=case)
+    finally:
+        cleanup_sqls = [
+            ("Cleanup offering assignment", f"DELETE FROM OFFERING_ASSIGNMENT WHERE OA_ID = {test_id}"),
+            ("Cleanup offering", f"DELETE FROM OFFERING WHERE O_ID = {test_id}"),
+            ("Cleanup teacher", f"DELETE FROM TEACHER WHERE T_ID = {test_id}"),
+            ("Cleanup subject", f"DELETE FROM SUBJECT WHERE S_ID = {test_id}"),
+            ("Cleanup study program", f"DELETE FROM STUDY_PROGRAM WHERE ST_NAME = '{study_name}'"),
+            ("Cleanup department", f"DELETE FROM DEPARTMENT WHERE D_NAME = '{dept_name}'"),
+            ("Cleanup semester planning", f"DELETE FROM SEMESTER_PLANNING WHERE SP_ID = {test_id}"),
+        ]
+        for title, sql in cleanup_sqls:
+            try:
+                run_statement(conn, report_items, title, sql, fetch_limit=0, report=False, case=case)
+            except Exception:
+                pass
+
+
+def test_teacher_actual_workload_for_semester(conn, report_items):
+    case = "Teacher actual workload for WS1415"
+    _affected, semester_rows = run_statement(
+        conn,
+        report_items,
+        "Get semester WS1415",
+        "SELECT SP_ID FROM SEMESTER_PLANNING WHERE SP_TERM = 'WS1415'",
+        fetch_limit=1,
+        case=case,
+    )
+    semester_id = semester_rows[0]["SP_ID"] if semester_rows else None
+    _affected, teacher_rows = run_statement(
+        conn,
+        report_items,
+        "Get teacher Nonnast",
+        "SELECT T_ID FROM TEACHER WHERE T_LASTNAME = 'Nonnast'",
+        fetch_limit=1,
+        case=case,
+    )
+    teacher_id = teacher_rows[0]["T_ID"] if teacher_rows else None
+    assert semester_id is not None
+    assert teacher_id is not None
+    sql = (
+        "SELECT "
+        "T.T_ID, "
+        "SP.SP_TERM, "
+        "COALESCE(SUM(OA.OA_ACTUAL_HOURS), 0) AS ACTUAL_HOURS "
+        "FROM TEACHER T "
+        "JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID "
+        "JOIN OFFERING O ON O.O_ID = OA.FK_O_ID "
+        "JOIN SEMESTER_PLANNING SP ON SP.SP_ID = O.FK_SP_ID "
+        f"WHERE T.T_ID = {teacher_id} AND SP.SP_ID = {semester_id} "
+        "GROUP BY T.T_ID, SP.SP_TERM"
+    )
+    run_statement(conn, report_items, "Compute teacher actual workload", sql, case=case)

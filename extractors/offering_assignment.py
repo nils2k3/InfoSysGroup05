@@ -114,22 +114,29 @@ class OfferingAssignmentExtractor(DataExtractor):
 
         teacher_ids = {t['T_ID'] for t in teacher}
 
-        df = OfferedCourses[['lecNo', 'sbjName', 'sbjlevel', 'studyPrg', 'term', 'cntLec']].copy()
+        base_cols = ['lecNo', 'sbjName', 'sbjlevel', 'studyPrg', 'term', 'cntLec']
+        if 'numSchd' in OfferedCourses.columns:
+            base_cols.append('numSchd')
+        df = OfferedCourses[base_cols].copy()
         df['teacher_id'] = pd.to_numeric(df['lecNo'], errors='coerce')
         df['sbjName_norm'] = df['sbjName'].apply(normalize_text)
         df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
         df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
         df['term_norm'] = df['term'].apply(normalize_term)
         df['cntLec'] = pd.to_numeric(df['cntLec'], errors='coerce').fillna(0)
+        if 'numSchd' in df.columns:
+            df['numSchd'] = pd.to_numeric(df['numSchd'], errors='coerce').fillna(0)
+        else:
+            df['numSchd'] = 0
 
         df = df.dropna(subset=['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'])
         df = df[df['teacher_id'] != 0]
         df['teacher_id'] = df['teacher_id'].astype(int)
 
-        df = (
-            df.groupby(['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'], as_index=False)
-            ['cntLec'].sum()
-        )
+        df = df.groupby(
+            ['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'],
+            as_index=False,
+        ).agg({'cntLec': 'sum', 'numSchd': 'sum'})
         
         records = []
         id_counter = 1
@@ -164,6 +171,7 @@ class OfferingAssignmentExtractor(DataExtractor):
                 'FK_O_ID': offering_rec['O_ID'],
                 'FK_T_ID': teacher_id,
                 'OA_ASSIGNED_HOURS': float(row['cntLec']),
+                'OA_ACTUAL_HOURS': float(row['numSchd']),
                 'OA_ROLE': None
 
             }

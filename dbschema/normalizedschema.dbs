@@ -95,6 +95,9 @@
 				<comment><![CDATA[The actual teaching load (Dozenten-Wochenstunden) assigned to this person.
 The specific workload hours (DWS) assigned to this individual teacher.]]></comment>
 			</column>
+			<column name="OA_ACTUAL_HOURS" type="DECIMAL" length="4" decimal="2" >
+				<comment><![CDATA[Actual weekly hours delivered for this offering in the semester.]]></comment>
+			</column>
 			<column name="OA_ROLE" type="VARCHAR" length="50" >
 				<comment><![CDATA[The role of the teacher in this course (e.g., Main Lecturer, Tutor).]]></comment>
 			</column>
