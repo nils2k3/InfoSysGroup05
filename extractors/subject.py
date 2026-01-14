@@ -61,12 +61,13 @@ class SubjectExtractor(DataExtractor):
             return float(value)
         
         subjects = []
+        id_counter = 1
         for index, row in subjectsDF.iterrows():
             if pd.isna(row['sbjNo']):
                 continue
             
             subject = {
-                'S_ID': str(row['sbjNo']),  # Primary key (not auto-increment)
+                'S_ID': id_counter,
                 'S_NAME': str(row['sbjName']) if not pd.isna(row['sbjName']) else None,
                 'S_STUPO_HOURS': safe_numeric(row['numCurr']),
                 'S_SEMESTER': int(row['sbjlevel']) if not pd.isna(row['sbjlevel']) else None,
@@ -75,6 +76,7 @@ class SubjectExtractor(DataExtractor):
                 'S_TYPE': str(row['elective']) if not pd.isna(row['elective']) else logging.warning(f"Missing elective type for subject {row['sbjNo']}") or 'P',
             }
             subjects.append(subject)
+            id_counter += 1
         
         # Sort by subject number (same as original)
         subjects = sorted(subjects, key=lambda x: x['S_ID'] or '')
