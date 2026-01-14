@@ -667,14 +667,12 @@ def test_teacher_actual_workload_for_semester(conn, report_items):
     assert teacher_id is not None
     sql = (
         "SELECT "
-        "T.T_ID, "
-        "SP.SP_TERM, "
-        "COALESCE(SUM(OA.OA_ACTUAL_HOURS), 0) AS ACTUAL_HOURS "
-        "FROM TEACHER T "
-        "JOIN OFFERING_ASSIGNMENT OA ON OA.FK_T_ID = T.T_ID "
-        "JOIN OFFERING O ON O.O_ID = OA.FK_O_ID "
-        "JOIN SEMESTER_PLANNING SP ON SP.SP_ID = O.FK_SP_ID "
-        f"WHERE T.T_ID = {teacher_id} AND SP.SP_ID = {semester_id} "
-        "GROUP BY T.T_ID, SP.SP_TERM"
+        "T_ID, "
+        "T_NAME, "
+        "T_LASTNAME, "
+        "ACTUAL_HOURS, "
+        "SP_TERM "
+        "FROM TEACHER_ACTUAL_WORKLOAD "
+        f"WHERE T_ID = {teacher_id} AND SP_TERM = 'WS1415'"
     )
     run_statement(conn, report_items, "Compute teacher actual workload", sql, case=case)
