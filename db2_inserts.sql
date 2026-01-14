@@ -5,6 +5,9 @@
 -- Disable autocommit for better performance
 -- Run this in DB2: db2 +c -f db2_inserts.sql
 
+CONNECT TO PLANTOOL;
+SET CURRENT SCHEMA PLANNING_TOOL;
+
 INSERT INTO DEPARTMENT (D_NAME) VALUES ('G');
 INSERT INTO DEPARTMENT (D_NAME) VALUES ('IT');
 INSERT INTO DEPARTMENT (D_NAME) VALUES ('IFS');

@@ -24,7 +24,7 @@ fi
 
 echo ""
 echo "Step 3: Verifying database content..."
-db2 "CONNECT TO PLANNINGTOOL"
+db2 "CONNECT TO PLANTOOL"
 db2 "SET CURRENT SCHEMA = PLANNING_TOOL"
 
 echo ""
