@@ -82,7 +82,7 @@ class ServiceRequestExtractor(DataExtractor):
                 'SR_ID': id_counter,
                 'FK_S_ID': sbj_no,
                 'FK_REQUESTING_D_NAME': client,
-                'SR_PROVIDING_D_NAME': provider,
+                'FK_PROVIDING_D_NAME': provider,
                 'SR_HOURS': float(hours),
                 'SR_STATUS': 'APPROVED',
                 'FK_SEMESTER_PLANNING': semester_lookup[term]
@@ -92,4 +92,3 @@ class ServiceRequestExtractor(DataExtractor):
         
         logger.info(f"{self.__class__.__name__} extracted {len(records)} records")
         return records
-
