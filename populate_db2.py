@@ -187,7 +187,8 @@ def extract_all_data(OfferedCourses, WorkLoad):
     # DEPUTAT_ACCOUNT
     da_ext = DeputatAccountExtractor()
     results['DEPUTAT_ACCOUNT'] = da_ext.extract(teacher=results['TEACHER'],
-                                               semester_planning=results['SEMESTER_PLANNING'])
+                                               semester_planning=results['SEMESTER_PLANNING'],
+                                               professor=results['PROFESSOR'])
     logger.info(f"✓ DEPUTAT_ACCOUNT: {len(results['DEPUTAT_ACCOUNT'])} records")
     
     # SERVICE_REQUEST

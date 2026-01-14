@@ -31,12 +31,51 @@ class LecturerExtractor(DataExtractor):
             logger.warning("Missing dependencies")
             return []
 
+        def normalize_name(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip().lower()
+            if not text:
+                return None
+            text = text.replace('\ufffd', '')
+            text = (
+                text.replace('ß', 'ss')
+                .replace('ä', 'ae')
+                .replace('ö', 'oe')
+                .replace('ü', 'ue')
+            )
+            return " ".join(text.split())
+
         professor_ids = set()
         for prof in professor:
             if prof.get('P_ID') is not None:
                 professor_ids.add(prof['P_ID'])
             elif prof.get('T_ID') is not None:
                 professor_ids.add(prof['T_ID'])
+
+        professor_name_map = {}
+        professor_records = []
+        for teacher_record in teacher:
+            teacher_id = teacher_record.get('T_ID')
+            if teacher_id not in professor_ids:
+                continue
+            first_name = normalize_name(teacher_record.get('T_NAME'))
+            last_name = normalize_name(teacher_record.get('T_LASTNAME'))
+            professor_records.append({
+                'id': teacher_id,
+                'first': first_name,
+                'last': last_name,
+            })
+            for key in {first_name, last_name}:
+                if not key:
+                    continue
+                if key in professor_name_map and professor_name_map[key] != teacher_id:
+                    logger.warning(
+                        f"Ambiguous supervisor name '{key}' maps to multiple professors "
+                        f"({professor_name_map[key]} vs {teacher_id})"
+                    )
+                    continue
+                professor_name_map[key] = teacher_id
 
         # Filter for lecturers only (non-professors)
         lecturersDF = OfferedCourses[
@@ -51,26 +90,29 @@ class LecturerExtractor(DataExtractor):
             # Find supervisor using name matching (same as original logic)
             supervisor = None
             if not pd.isna(row['supervisor']) and isinstance(row['supervisor'], str):
-                supervisor_name = str(row['supervisor']).lower().strip()
-                
-                # Search through professors only (supervisor must be a professor)
-                for teacher_record in teacher:
-                    teacher_id = teacher_record.get('T_ID')
-                    if teacher_id not in professor_ids:
-                        continue
-                    teacher_name = str(teacher_record.get('T_NAME') or '').lower().strip()
-                    teacher_lastname = str(teacher_record.get('T_LASTNAME') or '').lower().strip()
-                    
-                    # Check if supervisor name matches teacher's first name or last name
-                    if (supervisor_name and teacher_name and supervisor_name in teacher_name) or \
-                       (supervisor_name and teacher_lastname and supervisor_name in teacher_lastname):
-                        supervisor = teacher_id
-                        break
+                supervisor_name = normalize_name(row['supervisor'])
+                supervisor = professor_name_map.get(supervisor_name)
+                if supervisor is None and supervisor_name:
+                    matches = []
+                    for record in professor_records:
+                        if record['first'] and supervisor_name in record['first']:
+                            matches.append(record['id'])
+                        elif record['last'] and supervisor_name in record['last']:
+                            matches.append(record['id'])
+                    if matches:
+                        supervisor = matches[0]
+                        if len(matches) > 1:
+                            logger.warning(
+                                f"Supervisor '{row['supervisor']}' matches multiple professors {matches}; "
+                                f"using {supervisor}"
+                            )
+                    else:
+                        logger.warning(f"No professor match for supervisor '{row['supervisor']}'")
             
             lecturer = {
                 'T_ID': int(row['lecNo']),  # References TEACHER.T_ID
                 'L_STREET_ADDRESS': None,  # Default null as in original
-                'L_SUPERVISOR': supervisor # Foreign key to TEACHER.T_ID
+                'L_SUPERVISOR': supervisor # Foreign key to PROFESSOR.T_ID
             }
             lecturers.append(lecturer)
         

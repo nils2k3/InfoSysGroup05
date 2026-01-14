@@ -31,7 +31,7 @@ class DeputatAccountExtractor(DataExtractor):
         """Return list of table names this extractor depends on"""
         return ['TEACHER', 'SEMESTER_PLANNING']
     
-    def extract(self, teacher: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
+    def extract(self, teacher: List[Dict[str, Any]], semester_planning: List[Dict[str, Any]], professor: List[Dict[str, Any]], **kwargs) -> List[Dict[str, Any]]:
         """
         Extract data for DEPUTAT_ACCOUNT table.
         
@@ -56,12 +56,9 @@ class DeputatAccountExtractor(DataExtractor):
             for sp in semester_planning:
                 record = {
                     'ACC_ID': id_counter,
-                    'FK_TEACHER': t['T_ID'],
-                    'FK_SEMESTER_PLANNING': sp['SP_ID'],
-                    'ACC_BASELINE_HOURS': 18.0 if t.get('T_ISPROFESSOR') else 0.0,
-                    'ACC_CREDIT_HOURS': 0.0,
-                    'ACC_DEBIT_HOURS': 0.0,
-                    'ACC_BALANCE': 0.0,
+                    'FK_T_ID': t['T_ID'],
+                    'FK_SP_ID': sp['SP_ID'],
+                    'ACC_BASELINE_HOURS': 18.0 if t.get('T_ID') in {p['T_ID'] for p in professor} else 12.0,
                     'ACC_CARRYOVER': 0.0
                 }
                 records.append(record)

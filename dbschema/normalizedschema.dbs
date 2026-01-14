@@ -52,9 +52,15 @@
 			<column name="L_STREET_ADDRESS" type="VARCHAR" length="255" >
 				<comment><![CDATA[Specific home or office address of the external lecturer (if required).]]></comment>
 			</column>
+			<column name="L_SUPERVISOR" type="INT" >
+				<comment><![CDATA[Reference to the supervising professor (nullable).]]></comment>
+			</column>
 			<index name="pk_LECTURER" unique="PRIMARY_KEY" >
 				<column name="T_ID" />
 			</index>
+			<fk name="fk_LECTURER_PROFESSOR" to_schema="public" to_table="PROFESSOR" type="Identifying" mandatory="n" cardinality="ZeroMore" range_from="0" range_to="0" >
+				<fk_column name="L_SUPERVISOR" pk="T_ID" />
+			</fk>
 		</table>
 		<table name="OFFERING" spec="" >
 			<comment><![CDATA[The concrete instance of a subject in a specific semester. Handles group splitting.]]></comment>

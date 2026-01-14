@@ -140,6 +140,19 @@ def main():
     results['LECTURER'] = test_extractor(lec_ext, "LECTURER", OfferedCourses,
                                         teacher=results['TEACHER'],
                                         professor=results['PROFESSOR'])
+    if results['LECTURER']:
+        professor_ids = {
+            p.get('T_ID') for p in results['PROFESSOR'] if p.get('T_ID') is not None
+        }
+        invalid_supervisors = [
+            l for l in results['LECTURER']
+            if l.get('L_SUPERVISOR') is not None and l['L_SUPERVISOR'] not in professor_ids
+        ]
+        if invalid_supervisors:
+            logger.warning(
+                f"LECTURER has {len(invalid_supervisors)} supervisors not in PROFESSOR "
+                f"(example: {invalid_supervisors[0]})"
+            )
     
     offer_ext = OfferingExtractor()
     results['OFFERING'] = test_extractor(offer_ext, "OFFERING", OfferedCourses,
@@ -160,7 +173,8 @@ def main():
     da_ext = DeputatAccountExtractor()
     results['DEPUTAT_ACCOUNT'] = test_extractor(da_ext, "DEPUTAT_ACCOUNT",
                                                 teacher=results['TEACHER'],
-                                                semester_planning=results['SEMESTER_PLANNING'])
+                                                semester_planning=results['SEMESTER_PLANNING'],
+                                                professor=results['PROFESSOR'])
     
     sr_ext = ServiceRequestExtractor()
     results['SERVICE_REQUEST'] = test_extractor(sr_ext, "SERVICE_REQUEST",
