@@ -85,7 +85,8 @@ class ServiceRequestExtractor(DataExtractor):
                 'SR_PROVIDING_D_NAME': provider,
                 'SR_HOURS': float(hours),
                 'SR_STATUS': 'APPROVED',
-                'FK_SEMESTER_PLANNING': semester_lookup[term]
+                'FK_SEMESTER_PLANNING': semester_lookup[term],
+                "SR_NOTES": str(row['assNotes']) if 'assNotes' in row and not pd.isna(row['assNotes']) else None
             }
             records.append(record)
             id_counter += 1
