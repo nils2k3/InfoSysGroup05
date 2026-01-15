@@ -2,3 +2,4 @@
 __pycache__/
 .extractors/*.pyc
 .logs/
+.pytest-cache
