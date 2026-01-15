@@ -83,6 +83,22 @@ class OfferingAssignmentExtractor(DataExtractor):
                 return None
             return text.upper()
 
+        def parse_hours(value: Any) -> float:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return 0.0
+            if isinstance(value, str):
+                text = value.strip().replace(',', '.')
+                if not text:
+                    return 0.0
+                try:
+                    return float(text)
+                except ValueError:
+                    return 0.0
+            try:
+                return float(value)
+            except (TypeError, ValueError):
+                return 0.0
+
         # Create offering lookup by subject+term
         offering_by_subj_term = {}
         for o in offering:
@@ -123,7 +139,7 @@ class OfferingAssignmentExtractor(DataExtractor):
         df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
         df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
         df['term_norm'] = df['term'].apply(normalize_term)
-        df['cntLec'] = pd.to_numeric(df['cntLec'], errors='coerce').fillna(0)
+        df['cntLec'] = df['cntLec'].apply(parse_hours)
         if 'numSchd' in df.columns:
             df['numSchd'] = pd.to_numeric(df['numSchd'], errors='coerce').fillna(0)
         else:
