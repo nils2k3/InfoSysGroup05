@@ -12,6 +12,8 @@ Modify the extract() method to implement your specific business logic.
 
 import pandas as pd
 import logging
+import csv
+from pathlib import Path
 from typing import Dict, List, Any
 from base_extractor import DataExtractor
 
@@ -99,6 +101,69 @@ class OfferingAssignmentExtractor(DataExtractor):
             except (TypeError, ValueError):
                 return 0.0
 
+        def normalize_sbjno(value: Any) -> str:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            text = str(value).strip()
+            return text if text else None
+
+        def normalize_lecno(value: Any) -> int:
+            if value is None or (isinstance(value, float) and pd.isna(value)):
+                return None
+            try:
+                return int(float(value))
+            except (ValueError, TypeError):
+                return None
+
+        def load_shared_lecture_map() -> Dict[tuple, str]:
+            data_dir = Path(__file__).resolve().parent.parent / 'data'
+            map_path = data_dir / 'shared_lecture_map.csv'
+            if not map_path.exists():
+                fallback_path = data_dir / 'shared_lecture.csv'
+                if fallback_path.exists():
+                    map_path = fallback_path
+                else:
+                    logger.info("shared_lecture_map.csv not found; skipping shared lecture mapping")
+                    return {}
+            try:
+                df_map = pd.read_csv(
+                    map_path,
+                    sep=';',
+                    encoding='utf-8',
+                    dtype=str,
+                    on_bad_lines='skip',
+                    engine='python',
+                    quoting=csv.QUOTE_NONE,
+                )
+            except Exception:
+                df_map = pd.read_csv(
+                    map_path,
+                    sep=';',
+                    encoding='latin-1',
+                    dtype=str,
+                    on_bad_lines='skip',
+                    engine='python',
+                    quoting=csv.QUOTE_NONE,
+                )
+
+            shared_map = {}
+            for _, row in df_map.iterrows():
+                sbj_no = normalize_sbjno(row.get('sbjNo'))
+                term = normalize_term(row.get('term'))
+                lec_no = normalize_lecno(row.get('lecNo'))
+                group_id = normalize_sbjno(row.get('shared_group_id'))
+                if not sbj_no or not term or lec_no is None or not group_id:
+                    continue
+                key = (sbj_no, term, lec_no)
+                if key in shared_map and shared_map[key] != group_id:
+                    logger.warning(
+                        f"Conflicting shared_group_id for {key}: "
+                        f"{shared_map[key]} vs {group_id}"
+                    )
+                    continue
+                shared_map[key] = group_id
+            return shared_map
+
         # Create offering lookup by subject+term
         offering_by_subj_term = {}
         for o in offering:
@@ -130,7 +195,9 @@ class OfferingAssignmentExtractor(DataExtractor):
 
         teacher_ids = {t['T_ID'] for t in teacher}
 
-        base_cols = ['lecNo', 'sbjName', 'sbjlevel', 'studyPrg', 'term', 'cntLec']
+        shared_map = load_shared_lecture_map()
+
+        base_cols = ['lecNo', 'sbjNo', 'sbjName', 'sbjlevel', 'studyPrg', 'term', 'cntLec']
         if 'numSchd' in OfferedCourses.columns:
             base_cols.append('numSchd')
         df = OfferedCourses[base_cols].copy()
@@ -139,6 +206,7 @@ class OfferingAssignmentExtractor(DataExtractor):
         df['sbjlevel_norm'] = df['sbjlevel'].apply(normalize_semester)
         df['studyPrg_norm'] = df['studyPrg'].apply(normalize_program)
         df['term_norm'] = df['term'].apply(normalize_term)
+        df['sbjNo_norm'] = df['sbjNo'].apply(normalize_sbjno)
         df['cntLec'] = df['cntLec'].apply(parse_hours)
         if 'numSchd' in df.columns:
             df['numSchd'] = pd.to_numeric(df['numSchd'], errors='coerce').fillna(0)
@@ -149,10 +217,32 @@ class OfferingAssignmentExtractor(DataExtractor):
         df = df[df['teacher_id'] != 0]
         df['teacher_id'] = df['teacher_id'].astype(int)
 
-        df = df.groupby(
-            ['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'],
-            as_index=False,
-        ).agg({'cntLec': 'sum', 'numSchd': 'sum'})
+        def resolve_group(group: pd.DataFrame) -> pd.Series:
+            shared_ids = [v for v in group['shared_group_id'] if v]
+            unique_ids = list(dict.fromkeys(shared_ids))
+            if len(unique_ids) > 1:
+                logger.warning(
+                    "Multiple shared_group_id values for "
+                    f"{group.name}: {unique_ids}. Using {unique_ids[0]}"
+                )
+            return pd.Series({
+                'cntLec': group['cntLec'].sum(),
+                'numSchd': group['numSchd'].sum(),
+                'shared_group_id': unique_ids[0] if unique_ids else None,
+            })
+
+        df['shared_group_id'] = df.apply(
+            lambda r: shared_map.get((r['sbjNo_norm'], r['term_norm'], r['teacher_id'])),
+            axis=1,
+        )
+        df = (
+            df.groupby(
+                ['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'],
+                as_index=False,
+            )
+            .apply(resolve_group)
+            .reset_index()
+        )
         
         records = []
         id_counter = 1
@@ -188,6 +278,7 @@ class OfferingAssignmentExtractor(DataExtractor):
                 'FK_T_ID': teacher_id,
                 'OA_ASSIGNED_HOURS': float(row['cntLec']),
                 'OA_ACTUAL_HOURS': float(row['numSchd']),
+                'OA_SHARED_GROUP_ID': row.get('shared_group_id'),
                 'OA_ROLE': None
 
             }
