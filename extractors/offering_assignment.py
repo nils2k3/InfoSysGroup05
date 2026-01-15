@@ -214,7 +214,6 @@ class OfferingAssignmentExtractor(DataExtractor):
             df['numSchd'] = 0
 
         df = df.dropna(subset=['teacher_id', 'sbjName_norm', 'sbjlevel_norm', 'studyPrg_norm', 'term_norm'])
-        df = df[df['teacher_id'] != 0]
         df['teacher_id'] = df['teacher_id'].astype(int)
 
         def resolve_group(group: pd.DataFrame) -> pd.Series:

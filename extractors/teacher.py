@@ -49,11 +49,16 @@ class TeacherExtractor(DataExtractor):
         ]].drop_duplicates()
             
         teachers = []
-        for index, row in teachersDF.iterrows():
-            if pd.isna(row['lecNo']) or row['lecNo'] == 0:
+        seen_ids = set()
+        for _, row in teachersDF.iterrows():
+            if pd.isna(row['lecNo']):
                 continue
+            teacher_id = int(row['lecNo'])
+            if teacher_id in seen_ids:
+                continue
+            seen_ids.add(teacher_id)
             teacher = {
-                'T_ID': int(row['lecNo']),
+                'T_ID': teacher_id,
                 'T_NAME': str(row['lec1stn']) if not pd.isna(row['lec1stn']) else None,
                 'T_LASTNAME': str(row['lecName']) if not pd.isna(row['lecName']) else None,
                 'FK_D_NAME': str(row['lecDept']) if not pd.isna(row['lecDept']) else None,
