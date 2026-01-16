@@ -477,6 +477,29 @@ LEFT JOIN STUDY_PROGRAM SP ON SP.ST_NAME = S.FK_ST_NAME
 LEFT JOIN SEMESTER_PLANNING SEM ON SEM.SP_ID = O.FK_SP_ID
 			]]></query>
 		</view>
+		<view name="STUDY_PROGRAM_OFFERING_ASSIGNMENTS" >
+			<comment><![CDATA[Offering assignments per study program and semester.]]></comment>
+			<query><![CDATA[
+SELECT
+  OA.OA_ID,
+  OA.FK_O_ID,
+  OA.FK_T_ID,
+  OA.OA_ASSIGNED_HOURS,
+  OA.OA_ACTUAL_HOURS,
+  OA.OA_ROLE,
+  S.S_ID,
+  S.S_NAME,
+  S.S_SEMESTER,
+  SP.ST_NAME,
+  O.FK_SP_ID,
+  SEM.SP_TERM
+FROM OFFERING_ASSIGNMENT OA
+JOIN OFFERING O ON O.O_ID = OA.FK_O_ID
+JOIN SUBJECT S ON S.S_ID = O.FK_S_ID
+LEFT JOIN STUDY_PROGRAM SP ON SP.ST_NAME = S.FK_ST_NAME
+LEFT JOIN SEMESTER_PLANNING SEM ON SEM.SP_ID = O.FK_SP_ID
+			]]></query>
+		</view>
 	</schema>
 		<layout name="Default Diagram" id="b859a476-c4a6-449a-a3f1-11bd40fdc296" show_column_type="y" show_relation="columns" >
 			<entity schema="public" name="DEPARTMENT" color="3986C1" x="969" y="627" />
