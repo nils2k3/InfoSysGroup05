@@ -443,6 +443,24 @@ JOIN SEMESTER_PLANNING SP ON SP.SP_ID = PS.FK_SP_ID
 GROUP BY T.T_ID, T.T_NAME, T.T_LASTNAME, SP.SP_TERM
 			]]></query>
 		</view>
+		<view name="STUDY_PROGRAM_TERM_SUMMARY" >
+			<comment><![CDATA[Counts and hour sums by study program, semester, and term.]]></comment>
+			<query><![CDATA[
+SELECT
+  S.FK_ST_NAME AS ST_NAME,
+  S.S_SEMESTER,
+  SP.SP_TERM,
+  COUNT(OA.OA_ASSIGNED_HOURS) AS CNTLEC_COUNT,
+  COALESCE(SUM(S.S_STUPO_HOURS), 0) AS SUM_NUMCURR,
+  COALESCE(SUM(OA.OA_ACTUAL_HOURS), 0) AS SUM_NUMSCHD,
+  COALESCE(SUM(OA.OA_ASSIGNED_HOURS), 0) AS SUM_CNTLEC
+FROM OFFERING_ASSIGNMENT OA
+JOIN OFFERING O ON O.O_ID = OA.FK_O_ID
+JOIN SUBJECT S ON S.S_ID = O.FK_S_ID
+JOIN SEMESTER_PLANNING SP ON SP.SP_ID = O.FK_SP_ID
+GROUP BY S.FK_ST_NAME, S.S_SEMESTER, SP.SP_TERM
+			]]></query>
+		</view>
 		<view name="STUDY_PROGRAM_OFFERED_COURSES" >
 			<comment><![CDATA[Offered courses per study program and semester.]]></comment>
 			<query><![CDATA[
